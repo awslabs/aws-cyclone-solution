@@ -1,6 +1,25 @@
 
 ![Title](./media/title.png "Title")
 
+# Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [What is AWS-Cyclone-Solution?](#what-is-aws-cyclone-solution)
+  - [Capabilities & Performance](#capabilities--performance)
+  - [Benefits](#benefits)
+- [There are Two Deployment Options](#there-are-two-deployment-options)
+  - [Install and use the HYPER CLI to deploy hosts, configure resources & manage jobs](#install-and-use-the-hyper-cli-to-deploy-hosts-configure-resources--manage-jobs)
+  - [Deploy and configure resources with AWS CDK](#deploy-and-configure-resources-with-aws-cdk)
+- [HYPER CLI:](#hyper-cli)
+  - [Installing CLI](#installing-cli)
+  - [GETTING STARTED USING CLI:](#getting-started-using-cli)
+    - [SUGGESTIONS:](#suggestions)
+- [Deploy with AWS CDK](#deploy-with-aws-cdk)
+  - [Preparations](#preparations)
+  - [Configuring your resources](#configuring-your-resources)
+  - [Import Deployment Into HYPER CLI](#import-deployment-into-hyper-cli)
+- [Architecture](#architecture)
+- [EARLY RESULTS](#early-results)
 # What is AWS-Cyclone-Solution?
 AWS-Cyclone-Solution is a cloud-native HPC job scheduler and resource orchestrator built for AWS customers that require large compute capacity and high scheduling throughput.
 Customers can deploy compute clusters that span across all AWS regions and their on-premise compute from a single control plane. They can submit jobs at high throughput  to increase resource utilization and enable massive scale, even for short running jobs.
@@ -213,14 +232,25 @@ The HYPER CLI allows you to import a CDK deployed environment so you can still m
 
 # Architecture
 
+When you deploy a new host via the CLI or deploy the front-end-stack via CDK, a control plane architecture seen below is created. This control plane has an API that is integrated to the HYPER CLI and behind the API is an orchestration service running on AWS ECS that acts as a deployment pipeline for your resources. This allows you to add,update and delete regions, clusters, queues, images, and task definitions by speaking to the API. 
+
 ![High-level architecture diagram](./media/front-end-arch.png "Figure 1: Control plane architecture")
+
+The main region architecture below contains the job scheduling and resource orchestration logic. Here you have the job queues, task definitions and compute clusters. YOu also have components not shown here for logging and monitoring.
 
 ![High-level architecture diagram](./media/main-region-arch.png "Figure 2: Main region architecture")
 
+The hub region architecture below is created in any additional region you chose to use and extends the main region architecture above. 
+
 ![High-level architecture diagram](./media/hub-region-arch.png "Figure 3: Hub region architecture")
 
+# EARLY RESULTS
 
-# TEST RESULTS
+Max Planck Institute is one of the customers that was part of our beta release. Their use of AWS-Cyclone-Solution is outlined below.
+
+![Customer](./media/customer_slide.png "Customer")
+
+Here are some internal testing results early on in our development showing how the solution handles HTC grid type workloads with short running jobs. 
 
 ![Job Results](./media/job_results.png "Figure 2: Job Results")
 
