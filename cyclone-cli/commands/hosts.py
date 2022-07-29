@@ -100,7 +100,7 @@ def get_vpcs(ctx, param, value):
         for vpc in vpcs['Vpcs']:
             click.echo('----------------------------')
             if vpc['IsDefault'] == True:
-                click.echo('RECOMMENDED')
+                click.echo('DEFAULT VPC')
             click.echo(vpc['VpcId'])
             click.echo(vpc['CidrBlock'])
             click.echo('Default: ' + str(vpc['IsDefault']))
