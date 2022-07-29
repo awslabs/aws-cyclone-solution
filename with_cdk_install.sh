@@ -1,6 +1,4 @@
 #!/bin/bash
-python3 -m venv .env
-source .env/bin/activate
 yum -y update
 curl -sL https://rpm.nodesource.com/setup_16.x | bash -
 yum list available nodejs
