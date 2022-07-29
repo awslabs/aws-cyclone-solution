@@ -42,7 +42,6 @@ Customers can deploy compute clusters that span across all AWS regions and their
   * Global scale allows you to use the instance types that work best for your jobs and still get the scale you need
 
 ![intro](./media/spot_slide.png "intro")
-![intro](./media/cli_slide.png "intro")
 # There are Two Deployment Options
 ## Install and use the HYPER CLI to deploy hosts, configure resources & manage jobs
 For normal users that are not planning on making changes to the stack or who wish to use a deployment pipeline to for their environments. The HYPER CLI provides a simple and user friendly interface to use AWS-Cyclone-Solution.
@@ -54,6 +53,8 @@ This is for anyone code savy that wants to potentially make code changes or for 
 
 See section below "Deploy with AWS CDK" to continue with this approach.
 # HYPER CLI:
+
+![intro](./media/cli_slide.png "intro")
 
   Hyper CLI allows you to create and manage hosts (AWS-Cyclone-Solution solution
   deployments). Via CLI you can configure and manage resources for each host.
