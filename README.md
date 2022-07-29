@@ -1,4 +1,6 @@
 
+![Title](./media/title.png "Title")
+
 # What is AWS-Cyclone-Solution?
 AWS-Cyclone-Solution is a cloud-native HPC job scheduler and resource orchestrator built for AWS customers that require large compute capacity and high scheduling throughput.
 Customers can deploy compute clusters that span across all AWS regions and their on-premise compute from a single control plane. They can submit jobs at high throughput  to increase resource utilization and enable massive scale, even for short running jobs. 
