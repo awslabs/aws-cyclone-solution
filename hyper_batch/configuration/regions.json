@@ -1,0 +1,1 @@
+{"regions": [{"region": "us-east-1", "main_region": "True", "import_vpc": "False", "cidr": "78.0.0.0/16", "vpc_id": "vpc-xxx", "peer_with_main_region": "False"}]}

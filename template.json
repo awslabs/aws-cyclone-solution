@@ -1,0 +1,1591 @@
+{
+    "Outputs": {
+        "APIKEY": {
+            "Value": "V0716gNj9-9SQDDobIC-3HHsYwULMAcFlA"
+        },
+        "APIURL": {
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "https://",
+                        {
+                            "Ref": "placeholderjobapi33E0C5D1"
+                        },
+                        ".execute-api.eu-west-1.",
+                        {
+                            "Ref": "AWS::URLSuffix"
+                        },
+                        "/",
+                        {
+                            "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                        },
+                        "/config"
+                    ]
+                ]
+            }
+        },
+        "JOBURL": {
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "https://",
+                        {
+                            "Ref": "placeholderjobapi33E0C5D1"
+                        },
+                        ".execute-api.eu-west-1.",
+                        {
+                            "Ref": "AWS::URLSuffix"
+                        },
+                        "/",
+                        {
+                            "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                        },
+                        "/jobs"
+                    ]
+                ]
+            }
+        },
+        "placeholderjobapiEndpoint746BCBC0": {
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "https://",
+                        {
+                            "Ref": "placeholderjobapi33E0C5D1"
+                        },
+                        ".execute-api.eu-west-1.",
+                        {
+                            "Ref": "AWS::URLSuffix"
+                        },
+                        "/",
+                        {
+                            "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                        },
+                        "/"
+                    ]
+                ]
+            }
+        }
+    },
+    "Parameters": {
+        "SsmParameterValueawsserviceecsoptimizedamiamazonlinux2recommendedimageidC96584B6F00A464EAD1953AFF4B05118Parameter": {
+            "Default": "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id",
+            "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+        }
+    },
+    "Resources": {
+        "placeholderASG8F153BD9": {
+            "Properties": {
+                "LaunchConfigurationName": {
+                    "Ref": "placeholderASGLaunchConfigB7DAA93C"
+                },
+                "MaxSize": "1",
+                "MinSize": "0",
+                "NewInstancesProtectedFromScaleIn": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "PropagateAtLaunch": true,
+                        "Value": "place-holder-front-end-eu-west-1/place-holder-ASG"
+                    }
+                ],
+                "VPCZoneIdentifier": [
+                    "placeholder_subnet"
+                ]
+            },
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "UpdatePolicy": {
+                "AutoScalingScheduledAction": {
+                    "IgnoreUnmodifiedGroupSizeProperties": true
+                }
+            }
+        },
+        "placeholderASGInstanceProfileD4F5136E": {
+            "Properties": {
+                "Roles": [
+                    {
+                        "Ref": "placeholderASGInstanceRoleF1CDE1AA"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::InstanceProfile"
+        },
+        "placeholderASGInstanceRoleDefaultPolicyC327C2C7": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "ecs:DeregisterContainerInstance",
+                                "ecs:RegisterContainerInstance",
+                                "ecs:Submit*"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": {
+                                "Fn::GetAtt": [
+                                    "placeholderECSClusterBA205150",
+                                    "Arn"
+                                ]
+                            }
+                        },
+                        {
+                            "Action": [
+                                "ecs:Poll",
+                                "ecs:StartTelemetrySession"
+                            ],
+                            "Condition": {
+                                "ArnEquals": {
+                                    "ecs:cluster": {
+                                        "Fn::GetAtt": [
+                                            "placeholderECSClusterBA205150",
+                                            "Arn"
+                                        ]
+                                    }
+                                }
+                            },
+                            "Effect": "Allow",
+                            "Resource": "*"
+                        },
+                        {
+                            "Action": [
+                                "ecs:DiscoverPollEndpoint",
+                                "ecr:GetAuthorizationToken",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": "*"
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "placeholderASGInstanceRoleDefaultPolicyC327C2C7",
+                "Roles": [
+                    {
+                        "Ref": "placeholderASGInstanceRoleF1CDE1AA"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "placeholderASGInstanceRoleF1CDE1AA": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "ec2.amazonaws.com"
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "place-holder-front-end-eu-west-1/place-holder-ASG"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "placeholderASGInstanceSecurityGroup94B43943": {
+            "Properties": {
+                "GroupDescription": "place-holder-front-end-eu-west-1/place-holder-ASG/InstanceSecurityGroup",
+                "SecurityGroupEgress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "Description": "Allow all outbound traffic by default",
+                        "IpProtocol": "-1"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "place-holder-front-end-eu-west-1/place-holder-ASG"
+                    }
+                ],
+                "VpcId": "vpc-1234xxx1234"
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "placeholderASGLaunchConfigB7DAA93C": {
+            "DependsOn": [
+                "placeholderASGInstanceRoleDefaultPolicyC327C2C7",
+                "placeholderASGInstanceRoleF1CDE1AA"
+            ],
+            "Properties": {
+                "IamInstanceProfile": {
+                    "Ref": "placeholderASGInstanceProfileD4F5136E"
+                },
+                "ImageId": {
+                    "Ref": "SsmParameterValueawsserviceecsoptimizedamiamazonlinux2recommendedimageidC96584B6F00A464EAD1953AFF4B05118Parameter"
+                },
+                "InstanceType": "t3.2xlarge",
+                "SecurityGroups": [
+                    {
+                        "Fn::GetAtt": [
+                            "placeholderASGInstanceSecurityGroup94B43943",
+                            "GroupId"
+                        ]
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash\necho ECS_CLUSTER=",
+                                {
+                                    "Ref": "placeholderECSClusterBA205150"
+                                },
+                                " >> /etc/ecs/ecs.config\nsudo iptables --insert FORWARD 1 --in-interface docker+ --destination 169.254.169.254/32 --jump DROP\nsudo service iptables save\necho ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config"
+                            ]
+                        ]
+                    }
+                }
+            },
+            "Type": "AWS::AutoScaling::LaunchConfiguration"
+        },
+        "placeholderApiConfigLambda73DE0091": {
+            "DependsOn": [
+                "placeholderApiHandlerLambdaRoleDefaultPolicy6C78C190",
+                "placeholderApiHandlerLambdaRole5C288757"
+            ],
+            "Properties": {
+                "Code": "13-api-config-lambda/",
+                "Environment": {
+                    "Variables": {
+                        "STACK_NAME": "place-holder"
+                    }
+                },
+                "Handler": "api-config-lambda.lambda_handler",
+                "Layers": [
+                    {
+                        "Ref": "placeholderlayersfrontCA5D4C00"
+                    }
+                ],
+                "Role": {
+                    "Fn::GetAtt": [
+                        "placeholderApiHandlerLambdaRole5C288757",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.8",
+                "Timeout": 180,
+                "TracingConfig": {
+                    "Mode": "Active"
+                }
+            },
+            "Type": "AWS::Lambda::Function"
+        },
+        "placeholderApiHandlerLambda10057CF7": {
+            "DependsOn": [
+                "placeholderApiHandlerLambdaRoleDefaultPolicy6C78C190",
+                "placeholderApiHandlerLambdaRole5C288757"
+            ],
+            "Properties": {
+                "Code": "1-api-handler-lambda/",
+                "Handler": "api-handler-lambda.lambda_handler",
+                "Layers": [
+                    {
+                        "Ref": "placeholderlayersfrontCA5D4C00"
+                    }
+                ],
+                "Role": {
+                    "Fn::GetAtt": [
+                        "placeholderApiHandlerLambdaRole5C288757",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.8",
+                "Timeout": 180,
+                "TracingConfig": {
+                    "Mode": "Active"
+                }
+            },
+            "Type": "AWS::Lambda::Function"
+        },
+        "placeholderApiHandlerLambdaRole5C288757": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                }
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "placeholderApiHandlerLambdaRoleDefaultPolicy6C78C190": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "xray:PutTraceSegments",
+                                "xray:PutTelemetryRecords"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": "*"
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "placeholderApiHandlerLambdaRoleDefaultPolicy6C78C190",
+                "Roles": [
+                    {
+                        "Ref": "placeholderApiHandlerLambdaRole5C288757"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "placeholderCapProCA877656": {
+            "Properties": {
+                "AutoScalingGroupProvider": {
+                    "AutoScalingGroupArn": {
+                        "Ref": "placeholderASG8F153BD9"
+                    },
+                    "ManagedScaling": {
+                        "Status": "ENABLED",
+                        "TargetCapacity": 100
+                    },
+                    "ManagedTerminationProtection": "ENABLED"
+                },
+                "Name": "place-holder-CapPro"
+            },
+            "Type": "AWS::ECS::CapacityProvider"
+        },
+        "placeholderECSCluster539745E3": {
+            "Properties": {
+                "CapacityProviders": [
+                    {
+                        "Ref": "placeholderCapProCA877656"
+                    }
+                ],
+                "Cluster": {
+                    "Ref": "placeholderECSClusterBA205150"
+                },
+                "DefaultCapacityProviderStrategy": []
+            },
+            "Type": "AWS::ECS::ClusterCapacityProviderAssociations"
+        },
+        "placeholderECSClusterBA205150": {
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "ClusterName": "place-holder-orch-cluster",
+                "ClusterSettings": [
+                    {
+                        "Name": "containerInsights",
+                        "Value": "enabled"
+                    }
+                ]
+            },
+            "Type": "AWS::ECS::Cluster",
+            "UpdateReplacePolicy": "Delete"
+        },
+        "placeholderECSRole5480FF30": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "ecs-tasks.amazonaws.com"
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "ManagedPolicyArns": [
+                    {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "arn:",
+                                {
+                                    "Ref": "AWS::Partition"
+                                },
+                                ":iam::aws:policy/AdministratorAccess"
+                            ]
+                        ]
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "placeholderECSRoleDefaultPolicyD3662BAE": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "ecr:BatchCheckLayerAvailability",
+                                "ecr:GetDownloadUrlForLayer",
+                                "ecr:BatchGetImage"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "arn:",
+                                        {
+                                            "Ref": "AWS::Partition"
+                                        },
+                                        ":ecr:eu-west-1:123456789876:repository/placeholder_repo"
+                                    ]
+                                ]
+                            }
+                        },
+                        {
+                            "Action": "ecr:GetAuthorizationToken",
+                            "Effect": "Allow",
+                            "Resource": "*"
+                        },
+                        {
+                            "Action": [
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": {
+                                "Fn::GetAtt": [
+                                    "placeholderTaskdefplaceholderECSAddContainerLogGroup26A673AD",
+                                    "Arn"
+                                ]
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "placeholderECSRoleDefaultPolicyD3662BAE",
+                "Roles": [
+                    {
+                        "Ref": "placeholderECSRole5480FF30"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "placeholderTaskdefFC431799": {
+            "Properties": {
+                "ContainerDefinitions": [
+                    {
+                        "Environment": [
+                            {
+                                "Name": "ACCOUNT",
+                                "Value": "123456789876"
+                            },
+                            {
+                                "Name": "STACK_NAME",
+                                "Value": "place-holder"
+                            },
+                            {
+                                "Name": "REGION",
+                                "Value": "eu-west-1"
+                            },
+                            {
+                                "Name": "DEPLOYED",
+                                "Value": "True"
+                            }
+                        ],
+                        "Essential": true,
+                        "Image": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "123456789876.dkr.ecr.eu-west-1.",
+                                    {
+                                        "Ref": "AWS::URLSuffix"
+                                    },
+                                    "/placeholder_repo:orchestrator"
+                                ]
+                            ]
+                        },
+                        "LogConfiguration": {
+                            "LogDriver": "awslogs",
+                            "Options": {
+                                "awslogs-group": {
+                                    "Ref": "placeholderTaskdefplaceholderECSAddContainerLogGroup26A673AD"
+                                },
+                                "awslogs-region": "eu-west-1",
+                                "awslogs-stream-prefix": "place-holder-orchestrator"
+                            }
+                        },
+                        "Memory": 20500,
+                        "MountPoints": [
+                            {
+                                "ContainerPath": "/var/run/docker.sock",
+                                "ReadOnly": false,
+                                "SourceVolume": "var"
+                            },
+                            {
+                                "ContainerPath": "/usr/bin/docker",
+                                "ReadOnly": false,
+                                "SourceVolume": "bin"
+                            }
+                        ],
+                        "Name": "place-holder-ECSAddContainer",
+                        "Privileged": true
+                    }
+                ],
+                "ExecutionRoleArn": {
+                    "Fn::GetAtt": [
+                        "placeholderECSRole5480FF30",
+                        "Arn"
+                    ]
+                },
+                "Family": "place-holder-Taskdef",
+                "NetworkMode": "bridge",
+                "RequiresCompatibilities": [
+                    "EC2"
+                ],
+                "TaskRoleArn": {
+                    "Fn::GetAtt": [
+                        "placeholderECSRole5480FF30",
+                        "Arn"
+                    ]
+                },
+                "Volumes": [
+                    {
+                        "Host": {
+                            "SourcePath": "/var/run/docker.sock"
+                        },
+                        "Name": "var"
+                    },
+                    {
+                        "Host": {
+                            "SourcePath": "/usr/bin/docker"
+                        },
+                        "Name": "bin"
+                    }
+                ]
+            },
+            "Type": "AWS::ECS::TaskDefinition"
+        },
+        "placeholderTaskdefplaceholderECSAddContainerLogGroup26A673AD": {
+            "DeletionPolicy": "Retain",
+            "Properties": {
+                "RetentionInDays": 60
+            },
+            "Type": "AWS::Logs::LogGroup",
+            "UpdateReplacePolicy": "Retain"
+        },
+        "placeholderapiaccessD4731D86": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "dynamodb:BatchGetItem",
+                                "dynamodb:BatchWriteItem",
+                                "dynamodb:ConditionCheckItem",
+                                "dynamodb:PutItem",
+                                "dynamodb:DescribeTable",
+                                "dynamodb:DeleteItem",
+                                "dynamodb:GetItem",
+                                "dynamodb:Scan",
+                                "dynamodb:Query",
+                                "dynamodb:UpdateItem",
+                                "dynamodb:DescribeLimits"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": "arn:aws:dynamodb:eu-west-1:123456789876:table/*"
+                        },
+                        {
+                            "Action": "s3:*",
+                            "Effect": "Allow",
+                            "Resource": [
+                                "arn:aws:s3:::place-holder-images-eu-west-1",
+                                "arn:aws:s3:::place-holder-images-eu-west-1/*"
+                            ]
+                        },
+                        {
+                            "Action": "kms:Decrypt",
+                            "Effect": "Allow",
+                            "Resource": "arn:aws:kms:eu-west-1:123456789876:key/*"
+                        },
+                        {
+                            "Action": "ecs:RunTask",
+                            "Effect": "Allow",
+                            "Resource": "arn:aws:ecs:eu-west-1:123456789876:task-definition/place-holder*"
+                        },
+                        {
+                            "Action": "iam:PassRole",
+                            "Effect": "Allow",
+                            "Resource": "arn:aws:iam::123456789876:role/place-holder*"
+                        },
+                        {
+                            "Action": [
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents",
+                                "logs:DescribeLogStreams"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": "arn:aws:logs:eu-west-1:123456789876:*"
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "place-holder-front-end-eu-west-1-api-access",
+                "Roles": [
+                    {
+                        "Ref": "placeholderApiHandlerLambdaRole5C288757"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "placeholderapikeyssm33D9BC11": {
+            "Properties": {
+                "Name": "place-holder_api_key",
+                "Type": "String",
+                "Value": "V0716gNj9-9SQDDobIC-3HHsYwULMAcFlA"
+            },
+            "Type": "AWS::SSM::Parameter"
+        },
+        "placeholderapiurlssm3148741D": {
+            "Properties": {
+                "Name": "place-holder_api_url",
+                "Type": "String",
+                "Value": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "https://",
+                            {
+                                "Ref": "placeholderjobapi33E0C5D1"
+                            },
+                            ".execute-api.eu-west-1.",
+                            {
+                                "Ref": "AWS::URLSuffix"
+                            },
+                            "/",
+                            {
+                                "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                            },
+                            "/config"
+                        ]
+                    ]
+                }
+            },
+            "Type": "AWS::SSM::Parameter"
+        },
+        "placeholderbackuptables86B7C3B3": {
+            "Properties": {
+                "BackupPlan": {
+                    "BackupPlanName": "place-holder-backup-tables",
+                    "BackupPlanRule": [
+                        {
+                            "Lifecycle": {
+                                "DeleteAfterDays": 35
+                            },
+                            "RuleName": "Daily",
+                            "ScheduleExpression": "cron(0 5 * * ? *)",
+                            "TargetBackupVault": {
+                                "Fn::GetAtt": [
+                                    "placeholderbackupvaultC93F4344",
+                                    "BackupVaultName"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            "Type": "AWS::Backup::BackupPlan"
+        },
+        "placeholderbackuptablesSelection888B1A29": {
+            "Properties": {
+                "BackupPlanId": {
+                    "Fn::GetAtt": [
+                        "placeholderbackuptables86B7C3B3",
+                        "BackupPlanId"
+                    ]
+                },
+                "BackupSelection": {
+                    "IamRoleArn": {
+                        "Fn::GetAtt": [
+                            "placeholderbackuptablesSelectionRoleB0096239",
+                            "Arn"
+                        ]
+                    },
+                    "Resources": [
+                        {
+                            "Fn::GetAtt": [
+                                "placeholderimagestable9EB6AB1D",
+                                "Arn"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "placeholderjobDefinitionstable69C65DDB",
+                                "Arn"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "placeholderclusterstable2AA21AB8",
+                                "Arn"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "placeholderqueuestableCF00F22C",
+                                "Arn"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "placeholderregionstable58728641",
+                                "Arn"
+                            ]
+                        }
+                    ],
+                    "SelectionName": "Selection"
+                }
+            },
+            "Type": "AWS::Backup::BackupSelection"
+        },
+        "placeholderbackuptablesSelectionRoleB0096239": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "backup.amazonaws.com"
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "ManagedPolicyArns": [
+                    {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "arn:",
+                                {
+                                    "Ref": "AWS::Partition"
+                                },
+                                ":iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+                            ]
+                        ]
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "placeholderbackupvaultC93F4344": {
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "BackupVaultName": "place-holder-backup-vault"
+            },
+            "Type": "AWS::Backup::BackupVault",
+            "UpdateReplacePolicy": "Delete"
+        },
+        "placeholderclusterstable2AA21AB8": {
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "name",
+                        "AttributeType": "S"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST",
+                "KeySchema": [
+                    {
+                        "AttributeName": "name",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "SSESpecification": {
+                    "SSEEnabled": true
+                },
+                "TableName": "place-holder_clusters_table"
+            },
+            "Type": "AWS::DynamoDB::Table",
+            "UpdateReplacePolicy": "Delete"
+        },
+        "placeholderenabledashboardB2F58297": {
+            "Properties": {
+                "Name": "place-holder_enable_dashboard",
+                "Type": "String",
+                "Value": "enable_dashboard_true_or_false"
+            },
+            "Type": "AWS::SSM::Parameter"
+        },
+        "placeholderimagesB9A69923": {
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "BucketEncryption": {
+                    "ServerSideEncryptionConfiguration": [
+                        {
+                            "ServerSideEncryptionByDefault": {
+                                "SSEAlgorithm": "AES256"
+                            }
+                        }
+                    ]
+                },
+                "BucketName": "place-holder-images-eu-west-1",
+                "LoggingConfiguration": {
+                    "LogFilePrefix": "access-logs"
+                },
+                "PublicAccessBlockConfiguration": {
+                    "BlockPublicAcls": true,
+                    "BlockPublicPolicy": true,
+                    "IgnorePublicAcls": true,
+                    "RestrictPublicBuckets": true
+                },
+                "Tags": [
+                    {
+                        "Key": "aws-cdk:auto-delete-objects",
+                        "Value": "true"
+                    },
+                    {
+                        "Key": "aws-cdk:cr-owned:images/:cd0b6af3",
+                        "Value": "true"
+                    }
+                ]
+            },
+            "Type": "AWS::S3::Bucket",
+            "UpdateReplacePolicy": "Delete"
+        },
+        "placeholderimagestable9EB6AB1D": {
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "name",
+                        "AttributeType": "S"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST",
+                "KeySchema": [
+                    {
+                        "AttributeName": "name",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "SSESpecification": {
+                    "SSEEnabled": true
+                },
+                "TableName": "place-holder_images_table"
+            },
+            "Type": "AWS::DynamoDB::Table",
+            "UpdateReplacePolicy": "Delete"
+        },
+        "placeholderjobDefinitionstable69C65DDB": {
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "name",
+                        "AttributeType": "S"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST",
+                "KeySchema": [
+                    {
+                        "AttributeName": "name",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "SSESpecification": {
+                    "SSEEnabled": true
+                },
+                "TableName": "place-holder_jobDefinitions_table"
+            },
+            "Type": "AWS::DynamoDB::Table",
+            "UpdateReplacePolicy": "Delete"
+        },
+        "placeholderjobapi33E0C5D1": {
+            "Properties": {
+                "Name": "place-holder-job-api"
+            },
+            "Type": "AWS::ApiGateway::RestApi"
+        },
+        "placeholderjobapiANYApiPermissionTestplaceholderfrontenduseast1placeholderjobapi8C96F64BANY831025FA": {
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "placeholderApiHandlerLambda10057CF7",
+                        "Arn"
+                    ]
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:",
+                            {
+                                "Ref": "AWS::Partition"
+                            },
+                            ":execute-api:eu-west-1:123456789876:",
+                            {
+                                "Ref": "placeholderjobapi33E0C5D1"
+                            },
+                            "/test-invoke-stage/*/"
+                        ]
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
+        "placeholderjobapiANYApiPermissionplaceholderfrontenduseast1placeholderjobapi8C96F64BANY4F224C9A": {
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "placeholderApiHandlerLambda10057CF7",
+                        "Arn"
+                    ]
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:",
+                            {
+                                "Ref": "AWS::Partition"
+                            },
+                            ":execute-api:eu-west-1:123456789876:",
+                            {
+                                "Ref": "placeholderjobapi33E0C5D1"
+                            },
+                            "/",
+                            {
+                                "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                            },
+                            "/*/"
+                        ]
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
+        "placeholderjobapiANYF209BF55": {
+            "Properties": {
+                "AuthorizationType": "NONE",
+                "HttpMethod": "ANY",
+                "Integration": {
+                    "IntegrationHttpMethod": "POST",
+                    "Type": "AWS_PROXY",
+                    "Uri": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "arn:",
+                                {
+                                    "Ref": "AWS::Partition"
+                                },
+                                ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
+                                {
+                                    "Fn::GetAtt": [
+                                        "placeholderApiHandlerLambda10057CF7",
+                                        "Arn"
+                                    ]
+                                },
+                                "/invocations"
+                            ]
+                        ]
+                    }
+                },
+                "ResourceId": {
+                    "Fn::GetAtt": [
+                        "placeholderjobapi33E0C5D1",
+                        "RootResourceId"
+                    ]
+                },
+                "RestApiId": {
+                    "Ref": "placeholderjobapi33E0C5D1"
+                }
+            },
+            "Type": "AWS::ApiGateway::Method"
+        },
+        "placeholderjobapiAccountF08D3916": {
+            "DependsOn": [
+                "placeholderjobapi33E0C5D1"
+            ],
+            "Properties": {
+                "CloudWatchRoleArn": {
+                    "Fn::GetAtt": [
+                        "placeholderjobapiCloudWatchRole09FA4C46",
+                        "Arn"
+                    ]
+                }
+            },
+            "Type": "AWS::ApiGateway::Account"
+        },
+        "placeholderjobapiCloudWatchRole09FA4C46": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "apigateway.amazonaws.com"
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "ManagedPolicyArns": [
+                    {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "arn:",
+                                {
+                                    "Ref": "AWS::Partition"
+                                },
+                                ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+                            ]
+                        ]
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "placeholderjobapiDeployment4A706EC3d2063066a16a1e6bd02cb4d54ab6ec51": {
+            "DependsOn": [
+                "placeholderjobapiproxyANY3FF1E2DA",
+                "placeholderjobapiproxy00F23A21",
+                "placeholderjobapiANYF209BF55",
+                "placeholderjobapiconfigPOST7BCB2E4B",
+                "placeholderjobapiconfigB7906BDA",
+                "placeholderjobapijobsPOST6A9B2E50",
+                "placeholderjobapijobsB9B9EEF4"
+            ],
+            "Properties": {
+                "Description": "Automatically created by the RestApi construct",
+                "RestApiId": {
+                    "Ref": "placeholderjobapi33E0C5D1"
+                }
+            },
+            "Type": "AWS::ApiGateway::Deployment"
+        },
+        "placeholderjobapiDeploymentStageprod91429BCA": {
+            "DependsOn": [
+                "placeholderjobapiAccountF08D3916"
+            ],
+            "Properties": {
+                "AccessLogSetting": {
+                    "DestinationArn": {
+                        "Fn::GetAtt": [
+                            "placeholderlogsapi72F8D5BF",
+                            "Arn"
+                        ]
+                    },
+                    "Format": "{\"requestId\":\"$context.requestId\",\"ip\":\"$context.identity.sourceIp\",\"user\":\"$context.identity.user\",\"caller\":\"$context.identity.caller\",\"requestTime\":\"$context.requestTime\",\"httpMethod\":\"$context.httpMethod\",\"resourcePath\":\"$context.resourcePath\",\"status\":\"$context.status\",\"protocol\":\"$context.protocol\",\"responseLength\":\"$context.responseLength\"}"
+                },
+                "DeploymentId": {
+                    "Ref": "placeholderjobapiDeployment4A706EC3d2063066a16a1e6bd02cb4d54ab6ec51"
+                },
+                "MethodSettings": [
+                    {
+                        "DataTraceEnabled": true,
+                        "HttpMethod": "*",
+                        "LoggingLevel": "INFO",
+                        "ResourcePath": "/*"
+                    }
+                ],
+                "RestApiId": {
+                    "Ref": "placeholderjobapi33E0C5D1"
+                },
+                "StageName": "prod"
+            },
+            "Type": "AWS::ApiGateway::Stage"
+        },
+        "placeholderjobapiconfigB7906BDA": {
+            "Properties": {
+                "ParentId": {
+                    "Fn::GetAtt": [
+                        "placeholderjobapi33E0C5D1",
+                        "RootResourceId"
+                    ]
+                },
+                "PathPart": "config",
+                "RestApiId": {
+                    "Ref": "placeholderjobapi33E0C5D1"
+                }
+            },
+            "Type": "AWS::ApiGateway::Resource"
+        },
+        "placeholderjobapiconfigPOST7BCB2E4B": {
+            "Properties": {
+                "AuthorizationType": "NONE",
+                "HttpMethod": "POST",
+                "Integration": {
+                    "IntegrationHttpMethod": "POST",
+                    "Type": "AWS_PROXY",
+                    "Uri": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "arn:",
+                                {
+                                    "Ref": "AWS::Partition"
+                                },
+                                ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
+                                {
+                                    "Fn::GetAtt": [
+                                        "placeholderApiConfigLambda73DE0091",
+                                        "Arn"
+                                    ]
+                                },
+                                "/invocations"
+                            ]
+                        ]
+                    }
+                },
+                "ResourceId": {
+                    "Ref": "placeholderjobapiconfigB7906BDA"
+                },
+                "RestApiId": {
+                    "Ref": "placeholderjobapi33E0C5D1"
+                }
+            },
+            "Type": "AWS::ApiGateway::Method"
+        },
+        "placeholderjobapiconfigPOSTApiPermissionTestplaceholderfrontenduseast1placeholderjobapi8C96F64BPOSTconfigC1A32EC4": {
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "placeholderApiConfigLambda73DE0091",
+                        "Arn"
+                    ]
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:",
+                            {
+                                "Ref": "AWS::Partition"
+                            },
+                            ":execute-api:eu-west-1:123456789876:",
+                            {
+                                "Ref": "placeholderjobapi33E0C5D1"
+                            },
+                            "/test-invoke-stage/POST/config"
+                        ]
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
+        "placeholderjobapiconfigPOSTApiPermissionplaceholderfrontenduseast1placeholderjobapi8C96F64BPOSTconfig152160D0": {
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "placeholderApiConfigLambda73DE0091",
+                        "Arn"
+                    ]
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:",
+                            {
+                                "Ref": "AWS::Partition"
+                            },
+                            ":execute-api:eu-west-1:123456789876:",
+                            {
+                                "Ref": "placeholderjobapi33E0C5D1"
+                            },
+                            "/",
+                            {
+                                "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                            },
+                            "/POST/config"
+                        ]
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
+        "placeholderjobapijobapikey25A516AE": {
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "Enabled": true,
+                "Name": "place-holder-api-key",
+                "StageKeys": [
+                    {
+                        "RestApiId": {
+                            "Ref": "placeholderjobapi33E0C5D1"
+                        },
+                        "StageName": {
+                            "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                        }
+                    }
+                ],
+                "Value": "V0716gNj9-9SQDDobIC-3HHsYwULMAcFlA"
+            },
+            "Type": "AWS::ApiGateway::ApiKey",
+            "UpdateReplacePolicy": "Delete"
+        },
+        "placeholderjobapijobsB9B9EEF4": {
+            "Properties": {
+                "ParentId": {
+                    "Fn::GetAtt": [
+                        "placeholderjobapi33E0C5D1",
+                        "RootResourceId"
+                    ]
+                },
+                "PathPart": "jobs",
+                "RestApiId": {
+                    "Ref": "placeholderjobapi33E0C5D1"
+                }
+            },
+            "Type": "AWS::ApiGateway::Resource"
+        },
+        "placeholderjobapijobsPOST6A9B2E50": {
+            "Properties": {
+                "AuthorizationType": "NONE",
+                "HttpMethod": "POST",
+                "Integration": {
+                    "IntegrationHttpMethod": "POST",
+                    "Type": "AWS_PROXY",
+                    "Uri": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "arn:",
+                                {
+                                    "Ref": "AWS::Partition"
+                                },
+                                ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
+                                {
+                                    "Fn::GetAtt": [
+                                        "placeholderApiHandlerLambda10057CF7",
+                                        "Arn"
+                                    ]
+                                },
+                                "/invocations"
+                            ]
+                        ]
+                    }
+                },
+                "ResourceId": {
+                    "Ref": "placeholderjobapijobsB9B9EEF4"
+                },
+                "RestApiId": {
+                    "Ref": "placeholderjobapi33E0C5D1"
+                }
+            },
+            "Type": "AWS::ApiGateway::Method"
+        },
+        "placeholderjobapijobsPOSTApiPermissionTestplaceholderfrontenduseast1placeholderjobapi8C96F64BPOSTjobsAE0B8233": {
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "placeholderApiHandlerLambda10057CF7",
+                        "Arn"
+                    ]
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:",
+                            {
+                                "Ref": "AWS::Partition"
+                            },
+                            ":execute-api:eu-west-1:123456789876:",
+                            {
+                                "Ref": "placeholderjobapi33E0C5D1"
+                            },
+                            "/test-invoke-stage/POST/jobs"
+                        ]
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
+        "placeholderjobapijobsPOSTApiPermissionplaceholderfrontenduseast1placeholderjobapi8C96F64BPOSTjobsC7ECA27D": {
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "placeholderApiHandlerLambda10057CF7",
+                        "Arn"
+                    ]
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:",
+                            {
+                                "Ref": "AWS::Partition"
+                            },
+                            ":execute-api:eu-west-1:123456789876:",
+                            {
+                                "Ref": "placeholderjobapi33E0C5D1"
+                            },
+                            "/",
+                            {
+                                "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                            },
+                            "/POST/jobs"
+                        ]
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
+        "placeholderjobapiproxy00F23A21": {
+            "Properties": {
+                "ParentId": {
+                    "Fn::GetAtt": [
+                        "placeholderjobapi33E0C5D1",
+                        "RootResourceId"
+                    ]
+                },
+                "PathPart": "{proxy+}",
+                "RestApiId": {
+                    "Ref": "placeholderjobapi33E0C5D1"
+                }
+            },
+            "Type": "AWS::ApiGateway::Resource"
+        },
+        "placeholderjobapiproxyANY3FF1E2DA": {
+            "Properties": {
+                "AuthorizationType": "NONE",
+                "HttpMethod": "ANY",
+                "Integration": {
+                    "IntegrationHttpMethod": "POST",
+                    "Type": "AWS_PROXY",
+                    "Uri": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "arn:",
+                                {
+                                    "Ref": "AWS::Partition"
+                                },
+                                ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
+                                {
+                                    "Fn::GetAtt": [
+                                        "placeholderApiHandlerLambda10057CF7",
+                                        "Arn"
+                                    ]
+                                },
+                                "/invocations"
+                            ]
+                        ]
+                    }
+                },
+                "ResourceId": {
+                    "Ref": "placeholderjobapiproxy00F23A21"
+                },
+                "RestApiId": {
+                    "Ref": "placeholderjobapi33E0C5D1"
+                }
+            },
+            "Type": "AWS::ApiGateway::Method"
+        },
+        "placeholderjobapiproxyANYApiPermissionTestplaceholderfrontenduseast1placeholderjobapi8C96F64BANYproxy2C596C11": {
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "placeholderApiHandlerLambda10057CF7",
+                        "Arn"
+                    ]
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:",
+                            {
+                                "Ref": "AWS::Partition"
+                            },
+                            ":execute-api:eu-west-1:123456789876:",
+                            {
+                                "Ref": "placeholderjobapi33E0C5D1"
+                            },
+                            "/test-invoke-stage/*/*"
+                        ]
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
+        "placeholderjobapiproxyANYApiPermissionplaceholderfrontenduseast1placeholderjobapi8C96F64BANYproxy1C14002C": {
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "placeholderApiHandlerLambda10057CF7",
+                        "Arn"
+                    ]
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:",
+                            {
+                                "Ref": "AWS::Partition"
+                            },
+                            ":execute-api:eu-west-1:123456789876:",
+                            {
+                                "Ref": "placeholderjobapi33E0C5D1"
+                            },
+                            "/",
+                            {
+                                "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                            },
+                            "/*/*"
+                        ]
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
+        "placeholderjobapiusageplanB22AD99A": {
+            "Properties": {
+                "Throttle": {
+                    "BurstLimit": 5000,
+                    "RateLimit": 10000
+                }
+            },
+            "Type": "AWS::ApiGateway::UsagePlan"
+        },
+        "placeholderjobapiusageplanUsagePlanKeyResourceCDC76557": {
+            "Properties": {
+                "KeyId": {
+                    "Ref": "placeholderjobapijobapikey25A516AE"
+                },
+                "KeyType": "API_KEY",
+                "UsagePlanId": {
+                    "Ref": "placeholderjobapiusageplanB22AD99A"
+                }
+            },
+            "Type": "AWS::ApiGateway::UsagePlanKey"
+        },
+        "placeholderjoburlF574CA0C": {
+            "Properties": {
+                "Name": "place-holder_job_url",
+                "Type": "String",
+                "Value": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "https://",
+                            {
+                                "Ref": "placeholderjobapi33E0C5D1"
+                            },
+                            ".execute-api.eu-west-1.",
+                            {
+                                "Ref": "AWS::URLSuffix"
+                            },
+                            "/",
+                            {
+                                "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                            },
+                            "/jobs"
+                        ]
+                    ]
+                }
+            },
+            "Type": "AWS::SSM::Parameter"
+        },
+        "placeholderlayersfrontCA5D4C00": {
+            "Properties": {
+                "Content": ".lambda_dependencies/"
+            },
+            "Type": "AWS::Lambda::LayerVersion"
+        },
+        "placeholderlogsapi72F8D5BF": {
+            "DeletionPolicy": "Retain",
+            "Properties": {
+                "RetentionInDays": 60
+            },
+            "Type": "AWS::Logs::LogGroup",
+            "UpdateReplacePolicy": "Retain"
+        },
+        "placeholderqueuestableCF00F22C": {
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "name",
+                        "AttributeType": "S"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST",
+                "KeySchema": [
+                    {
+                        "AttributeName": "name",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "SSESpecification": {
+                    "SSEEnabled": true
+                },
+                "TableName": "place-holder_queues_table"
+            },
+            "Type": "AWS::DynamoDB::Table",
+            "UpdateReplacePolicy": "Delete"
+        },
+        "placeholderregionstable58728641": {
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "name",
+                        "AttributeType": "S"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST",
+                "KeySchema": [
+                    {
+                        "AttributeName": "name",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "SSESpecification": {
+                    "SSEEnabled": true
+                },
+                "TableName": "place-holder_regions_table"
+            },
+            "Type": "AWS::DynamoDB::Table",
+            "UpdateReplacePolicy": "Delete"
+        }
+    }
+}

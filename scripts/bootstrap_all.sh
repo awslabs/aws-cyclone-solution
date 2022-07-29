@@ -1,0 +1,17 @@
+cdk bootstrap aws://229287627589/us-east-1;
+#cdk bootstrap aws://229287627589/us-east-2;
+#cdk bootstrap aws://229287627589/us-west-1;
+#cdk bootstrap aws://229287627589/us-west-2;
+cdk bootstrap aws://229287627589/eu-central-1;
+#cdk bootstrap aws://229287627589/eu-west-1;
+#cdk bootstrap aws://229287627589/eu-west-2;
+#cdk bootstrap aws://229287627589/eu-west-3;
+#cdk bootstrap aws://229287627589/eu-north-1;
+#cdk bootstrap aws://229287627589/ap-south-1;
+#cdk bootstrap aws://229287627589/ap-northeast-3;
+#cdk bootstrap aws://229287627589/ap-northeast-2;
+#cdk bootstrap aws://229287627589/ap-southeast-1;
+#cdk bootstrap aws://229287627589/ap-southeast-2;
+#cdk bootstrap aws://229287627589/ap-northeast-1;
+#cdk bootstrap aws://229287627589/ca-central-1;
+#cdk bootstrap aws://229287627589/sa-east-1;

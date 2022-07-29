@@ -1,0 +1,5 @@
+jsonpickle
+aws_xray_sdk
+dynamodb-json
+requests
+requests_aws4auth

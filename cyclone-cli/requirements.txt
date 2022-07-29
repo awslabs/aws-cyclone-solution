@@ -1,0 +1,9 @@
+click==8.0.3
+gql[all]==3.0.0b0
+awscli
+boto3
+botocore
+jsii
+jsonpickle==2.0.0
+aiohttp
+requests

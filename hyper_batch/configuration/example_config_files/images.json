@@ -1,0 +1,7 @@
+{"images": [
+            {
+                "imageName": "sample_worker_image",
+                "directory": "hyper_batch/configuration/images/batch_processor"
+            }
+    ]
+}

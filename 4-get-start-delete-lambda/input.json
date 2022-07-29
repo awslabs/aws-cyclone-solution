@@ -1,0 +1,37 @@
+{
+    "input" : {"sqs_name": "hyper-batch-definition-1",
+      "uuid": "EB6661F8-4E16-48C9-8923-7D29CE2FED24",
+      "LeaveRunning": "True",
+      "Output": "null",
+      "Status": "Starting",
+      "JobName": "null",
+      "table": "command_drop"
+      },
+    "TaskToken" : "xxxxxxxxxxx"
+  }
+
+  {'jobName': 'HelloWorld', 
+    'createdAt': '10-18-2020 10:16:35.481',
+    'containerOverrides': 
+    {
+        'environment': [
+            {
+                'name': 'TABLE', 'value': 'hyper-batch-2-GlobalAsyncTable8E21928A-53A4EYOPGO0T'
+            },
+            {
+                'name': 'JOB_DEFINITION', 'value': 'BatchJobDef0BB5F6F7-4a99e50f4d331e4:2'
+            },
+            {
+                'name': 'SF_ARN', 'value': 'arn:aws:states:us-east-2:229287627589:stateMachine:hyper_batch'
+            }
+            ],
+        'memory': 1024,
+        'command': [
+                 'python', 'batch_processor.py'
+                 ]
+    },
+    'arrayProperties': {'size': 1},
+    'id': '4a239c8f-280d-4d1b-961f-48d720aaa887',
+     'region': 'eu-west-1', 
+     'jobDefinition': 'BatchJobDef0BB5F6F7-4a99e50f4d331e4:2'}
+{'jobName': 'HelloWorld', 'createdAt': '10-18-2020 10:16:35.481', 'containerOverrides': {'environment': [{'name': 'TABLE', 'value': 'hyper-batch-2-GlobalAsyncTable8E21928A-53A4EYOPGO0T'}, {'name': 'JOB_DEFINITION', 'value': 'BatchJobDef0BB5F6F7-4a99e50f4d331e4:2'}, {'name': 'SF_ARN', 'value': 'arn:aws:states:us-east-2:229287627589:stateMachine:hyper_batch'}], 'memory': 1024, 'command': ['python', 'batch_processor.py']}, 'arrayProperties': {'size': 1}, 'id': '4a239c8f-280d-4d1b-961f-48d720aaa887', 'region': 'eu-west-1', 'jobDefinition': 'BatchJobDef0BB5F6F7-4a99e50f4d331e4:2'}

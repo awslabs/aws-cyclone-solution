@@ -1,0 +1,27 @@
+{
+  "Records": [
+    {
+      "eventID": "1",
+      "eventVersion": "1.0",
+      "dynamodb": {
+        "Keys": {
+          "userId": {
+            "N": "101"
+          }
+        },
+        "NewImage": {
+          "Region": {
+            "S": "us-east-1"
+          }
+        },
+        "StreamViewType": "NEW_IMAGE",
+        "SequenceNumber": "111",
+        "SizeBytes": 128
+      },
+      "awsRegion": "eu-west-1",
+      "eventName": "INSERT",
+      "eventSourceARN": "event:source:ARN",
+      "eventSource": "aws:dynamodb"
+    }
+  ]
+}

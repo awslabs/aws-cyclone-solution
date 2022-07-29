@@ -1,0 +1,42 @@
+{
+  "jobDefinitions":[
+      {
+          "jobDefinitionName": "sample-def-1",
+          "use_cyclone_image": "True",
+          "cyclone_image_name": "sample_worker_image",
+          "image_uri": null,
+          "vcpus": 1,
+          "memory_limit_mib": null,
+          "linux_parameters": null,
+          "ulimits": null,
+          "mount_points": null,
+          "host_volumes": null,
+          "gpu_count": null,
+          "environment": null,
+          "privileged": null,
+          "user": null,
+          "jobs_to_workers_ratio": 1,
+          "timeout_minutes": null,
+          "iam_policies":[]
+      },
+      {
+          "jobDefinitionName": "sample-2-CANNOT-USE",
+          "use_cyclone_image": "True",
+          "cyclone_image_name": "sample_worker_image",
+          "image_uri": null,
+          "vcpus": 1,
+          "memory_limit_mib": 1024,
+          "linux_parameters": {"init_process_enabled": "True", "shared_memory_size": 10},
+          "ulimits": [{"hard_limit":123, "UlimitName": "CORE", "soft_limit": 123}],
+          "mount_points": [{"container_path": "tmp_host", "read_only": "False", "source_volume": "volume"}],
+          "host_volumes": [{"name": "volume", "source_path": "tmp"}],
+          "gpu_count": 1,
+          "environment": {"sample_key":"sample_value"},
+          "privileged": "True",
+          "user": "sample-user",
+          "jobs_to_workers_ratio": 1,
+          "timeout_minutes": 60,
+          "iam_policies": ["my_customer_managed_policy"]
+      }
+  ]
+}

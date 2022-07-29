@@ -1,0 +1,22 @@
+{"regions": [
+    {
+        "region": "us-east-1", 
+        "main_region": "True", 
+        "import_vpc": "False", 
+        "cidr": "101.0.0.0/16", 
+        "vpc_id": "vpc-xxxxxx", 
+        "peer_with_main_region": "False",
+        "deploy_vpc_endpoints": "DATA_OPTIMISED"
+    },
+    {
+        "region": "us-east-2",
+        "main_region": "False",
+        "import_vpc": "False",
+        "cidr": "102.0.0.0/16",
+        "vpc_id": "vpc-xxxxxx",
+        "peer_with_main_region": "True",
+        "deploy_vpc_endpoints": "DATA_OPTIMISED"
+    }
+]
+}
+    

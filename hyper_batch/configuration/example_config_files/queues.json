@@ -1,0 +1,25 @@
+{
+    "queues":[
+        {
+            "queue_name": "sample-queue-1",
+            "computeEnvironment": "sample-cluster-1",
+            "optimise_lowest_spot_cost_region": "True",
+            "region_distribution_weights": {"us-east-1": "auto", "us-east-2": "auto"}
+        },
+        {
+            "queue_name": "sample-queue-2",
+            "computeEnvironment": "sample-cluster-2",
+            "optimise_lowest_spot_cost_region": "False",
+            "region_distribution_weights": {"us-east-1": 1}
+        },
+        {
+            "queue_name": "sample-queue-3",
+            "computeEnvironment": "sample-cluster-2",
+            "optimise_lowest_spot_cost_region": "False",
+            "region_distribution_weights": {"us-east-1": 1, "us-east-2": 3}
+        }
+    ]
+}
+    
+
+

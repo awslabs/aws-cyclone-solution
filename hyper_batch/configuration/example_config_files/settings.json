@@ -1,0 +1,8 @@
+{
+    "stack_settings":
+        {
+            "stack_name": "sample-name",
+            "account": "123xxx123",
+            "enable_dashboard": "True"
+        }
+}
