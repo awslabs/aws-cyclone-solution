@@ -3,7 +3,9 @@
 
 # What is AWS-Cyclone-Solution?
 AWS-Cyclone-Solution is a cloud-native HPC job scheduler and resource orchestrator built for AWS customers that require large compute capacity and high scheduling throughput.
-Customers can deploy compute clusters that span across all AWS regions and their on-premise compute from a single control plane. They can submit jobs at high throughput  to increase resource utilization and enable massive scale, even for short running jobs. 
+Customers can deploy compute clusters that span across all AWS regions and their on-premise compute from a single control plane. They can submit jobs at high throughput  to increase resource utilization and enable massive scale, even for short running jobs.
+
+![intro](./media/intro_slide.png "intro")
 
 ## Capabilities & Performance 
    * Deploy compute clusters that span all AWS regions and configure region weights for your queues
@@ -14,11 +16,13 @@ Customers can deploy compute clusters that span across all AWS regions and their
    * Solution provides a service like experience for resource creation and configuration via CLI
    * Run containers on AWS Batch or instances on EC2
 
+![intro](./media/global_slide.png "intro")
 ## Benefits
   * Optimize spot instance cost and availability by diversifying across all spot pools globally
   * AWS-Cyclone-Solution can automatically prioritize regions with lower spot cost and will leverage the available capacity across all regions without needing to retry jobs
   * Global scale allows you to use the instance types that work best for your jobs and still get the scale you need
 
+![intro](./media/spot_slide.png "intro")
 # There are Two Deployment Options
 ## Install and use the HYPER CLI to deploy hosts, configure resources & manage jobs
 For normal users that are not planning on making changes to the stack or who wish to use a deployment pipeline to for their environments. The HYPER CLI provides a simple and user friendly interface to use AWS-Cyclone-Solution.
