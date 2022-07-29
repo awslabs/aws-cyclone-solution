@@ -1,0 +1,14 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+/archive
+/.lambda_dependencies
+/NEW.lambda_depndencies
+/cdk.out
+/.env
+/.idea
+/.vscode
+/ec2-controler/
+/scripts/
+/host_credentials/
+/hyper_batch/__pycache__/
