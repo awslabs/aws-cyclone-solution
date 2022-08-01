@@ -71,6 +71,11 @@ See section below "Deploy with AWS CDK" to continue with this approach.
   logs via the list resources commands.
 ## Installing CLI
 
+Prerequisites:
+1. Docker installed and docker agent running. This is needed for the create-host command only. Once released this will not be needed.
+2. AWS CLI credentials configured
+3. Currently only supports MacOS and Linux distributions, Windows support planned.
+
 First create a virtual environment with:
 ```
 python3 -m venv .env
@@ -89,11 +94,6 @@ hyper
 ```
 You should see the hyper CLI help section appear.
 
-Prerequisites:
-1. Docker installed and docker agent running. This is needed for the create-host command only. Once released this will not be needed.
-2. AWS CLI credentials configured
-3. Currently only supports MacOS and Linux distributions, Windows support planned.
-
 ## GETTING STARTED USING CLI:
 
 All create resource commands have a guided walk-through to create resources and you can typically click through the default values to create an example deployment able to run jobs you submit using "qsub ...". Each CLI grouping and command also provides a --help section for more details.
@@ -104,12 +104,11 @@ All create resource commands have a guided walk-through to create resources and 
   select-host <host-name>" to switch between them.
 
   2. When you have created a new host you need to initiate your main region
-  first with "hyper regions init-main-region". Check deployment status of main region with "hyper regions list-regions" or continue configuring other resources.
+  first with "hyper regions init-main-region". Check deployment status of main region with "hyper regions list-regions". It is recommended to wait for the main region to be initiated before adding additional hub regions.
   
-  3. You can also take some time to explore the CLI groupings and commands within each such as "hyper regions", "hyper clusters" & "hyper queues". All provide a list, add, update and delete command for each resource type. When you add a new resource use the list resource command to view deployment status and any error logs. If you need to update a specif parameter for a resource you can use update command to make changes and re-deploy. 
+  1. You can also take some time to explore the CLI groupings and commands within each such as "hyper regions", "hyper clusters" & "hyper queues". All provide a list, add, update and delete command for each resource type. When you add a new resource use the list resource command to view deployment status and any error logs. If you need to update a specif parameter for a resource you can use update command to make changes and re-deploy. 
 
-  4. You can start by adding your first hub region with the "hyper regions add-
-  region" command and following the guided walk-through. You can add more regions, update and delete them at any time using "update-region" & "delete-region. Use "list-regions" to view
+  2. If your main region is now in Status=ACTIVE, you can start by adding your first hub region with the "hyper regions add-region" command and following the guided walk-through. You can add more regions, update and delete them at any time using "update-region" & "delete-region. Use "list-regions" to view
   existing region configurations and deployment logs.
 
   5. If you are happy with regions for now move on to create your first
@@ -129,7 +128,7 @@ All create resource commands have a guided walk-through to create resources and 
 
   8. Next create your first job definition with "hyper definitions add-definition" using the
   name of your newly created image as cyclone-image-name. Remember to use an EXACT MATCH of image
-  name. Be mindful when choosing the "jobs to workers ratio" as this will decide how many workers are started for a given number of submitted jobs (in that minute). For example a ratio of 10 means that if you submit 10 000 jobs you will request 1000 workers. Jobs run in series on workers with a matching task definition but are independent of the workers created as a result of its submission. Task definition instances are substantiated based on number of submitted jobs and the jobs to worker ratio and will run any job queued that matches its task definition until there are none left and then terminate.
+  name. Be mindful when choosing the "jobs to workers ratio" as this will decide how many workers are started for a given number of submitted jobs (in that minute). For example a ratio of 10 means that if you submit 10 000 jobs you will request 1000 workers. Jobs run in series on workers with a matching task definition but are independent of the workers created as a result of its submission. Task definition instances are substantiated based on number of submitted jobs and the jobs to worker ratio and will run any job queued that matches its task definition until there are none left and then terminate. NOTE: Cyclone level jobs, your jobs, will run in series within a container and reuse the working directory so make sure your executable code takes into account that the work directory is being reused, for example adding a clean up action at the end of a job is a good idea.
 
   9. Now you are ready to start submitting and querying jobs using qsub, qstat
   and qdel commands WITHOUT "hyper" in front. Use "qsub --help" for more
@@ -137,6 +136,8 @@ All create resource commands have a guided walk-through to create resources and 
  ### SUGGESTIONS:
 
    * When submitting a lot of jobs use threading, example "for i in $(seq 1000); do qsub -q <queue-name> qsub_example_file.sh; done &" can be run multiple times to create parallel submission processes each submitting 1000 tasks. You can use the submit_script.sh to do this if submitting a lot of jobs, just modify parameters in script to what you want. This script will limit number of parallel threads at any one time to keep cpu utilization below a threshold you specify. Maximum submission rate is 40 000 TPS per queue on back-end with progressive scaling up (DynamoDB on-demand scaling).
+
+   Please let us know if you would like to see Array jobs available and what submission format you would like to see for this. Thank you.
 
    * You can delete multiple jobs at once by passing the output from a qstat command if you use --only-job-id-out True. Example "qdel -q <queue-name> $(qstat -q <queue-name> --only-job-id-out true)".
 

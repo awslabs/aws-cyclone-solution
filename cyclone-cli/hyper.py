@@ -64,8 +64,8 @@ def cli(ctx):
     1. Start by creating a new host with the "hyper hosts create-host" command. Use "hosts create-host --help" for more details. It is common to hit limits for Elastic IPs and/or VPCs so importing a vpc can be easier.\n
     Once your host has been created the CLI will automatically load the API credentials and you can start interacting with host to configure resources.\n
     If you have multiple hosts created, use "hosts list-hosts" and "hosts select-host <host-name>" to switch between them.\n
-    2. When you have created a new host you need to initiate your main region first with "hyper regions init-main-region". Check deployment status of main region with "hyper regions list-regions" or continue configuring other resources while waiting.\n
-    3. You can start by adding your first hub region with the "hyper regions add-
+    2. When you have created a new host you need to initiate your main region first with "hyper regions init-main-region". Check deployment status of main region with "hyper regions list-regions". It is recommended to wait for the main region to be initiated before adding additional hub regions.\n
+    3. If your main region is now in Status=ACTIVE, you can start by adding your first hub region with the "hyper regions add-
     region" command and following the guided walk-through. You can add more regions, update and delete them at any time using "update-region" & "delete-region (updating network configurations can experience problems so better to delete region and recreate in that case). Use "list-regions" to view
     existing region configurations and deployment logs."\n
     4. If you are happy with regions for now move on to create your first cluster with "hyper clusters create-cluster". Clusters automatically extend across the configured regions.You can also update and delete clusters.\n
