@@ -50,7 +50,7 @@ try:
     deployed = os.environ.get("DEPLOYED")
     print('DEPLOYED = ' + deployed)
 except Exception:
-    deployed = 'False'
+    deployed = 'True'
 
 if deployed == 'False':
     #front-end stack in main region
