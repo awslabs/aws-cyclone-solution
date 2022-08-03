@@ -121,8 +121,8 @@ def cli(ctx, job_name, queue, retries, definition, commands, filename):
     message['TableName'] = message['Item']['jobQueue']
 
     url = ctx.obj.url
-    auth = HTTPBasicAuth('apikey', ctx.obj.key)
-    post = requests.post(url, auth=auth, data=json.dumps(message))
+    header = {"x-api-key" : ctx.obj.key}
+    post = requests.post(url, data=json.dumps(message), headers=header)
     j = post.json()
     
     try:

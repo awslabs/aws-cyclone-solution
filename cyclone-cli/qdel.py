@@ -82,8 +82,8 @@ def cli(ctx, job_ids, queue):
             )
             
             url = ctx.obj.url
-            auth = HTTPBasicAuth('apikey', ctx.obj.key)
-            post = requests.post(url, auth=auth, data=message)
+            header = {"x-api-key" : ctx.obj.key}
+            post = requests.post(url, data=message, headers=header)
             j = post.json()
             if j['ResponseMetadata']['HTTPStatusCode'] == 200:
                 click.echo('Successfully Deleted: ' + job_id)

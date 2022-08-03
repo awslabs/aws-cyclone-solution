@@ -10,12 +10,13 @@ pip3 install awscli
 pip3 install boto3
 pip3 install botocore
 pip3 install click==8.0.3
-pip3 install gql==3.0.0b0
 pip3 install jsii
 pip3 install jsonpickle==2.0.0
 pip3 install aiohttp
 pip3 install requests
 pip3 install -e cyclone-cli/
+pip3 install py-cpuinfo
+pip3 install psutil
 
 if ! hyper; then
    echo Attempting to use root

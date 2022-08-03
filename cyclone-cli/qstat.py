@@ -105,8 +105,8 @@ def cli(ctx, job_id, job_name, queue, filter_status, only_job_id_out):
         )
 
         url = ctx.obj.url
-        auth = HTTPBasicAuth('apikey', ctx.obj.key)
-        post = requests.post(url, auth=auth, data=message)
+        header = {"x-api-key" : ctx.obj.key}
+        post = requests.post(url, data=message, headers=header)
 
         j = post.json()
         item = j['Item']
@@ -130,8 +130,8 @@ def cli(ctx, job_id, job_name, queue, filter_status, only_job_id_out):
         
 
         url = ctx.obj.url
-        auth = HTTPBasicAuth('apikey', ctx.obj.key)
-        post = requests.post(url, auth=auth, data=message)
+        header = {"x-api-key" : ctx.obj.key}
+        post = requests.post(url, data=message, headers=header)
 
         j = post.json()
         
@@ -163,8 +163,8 @@ def cli(ctx, job_id, job_name, queue, filter_status, only_job_id_out):
                             )
 
             url = ctx.obj.url
-            auth = HTTPBasicAuth('apikey', ctx.obj.key)
-            post = requests.post(url, auth=auth, data=message)
+            header = {"x-api-key" : ctx.obj.key}
+            post = requests.post(url, data=message, headers=header)
 
             j = post.json()
             items = j['Items']
@@ -190,11 +190,10 @@ def cli(ctx, job_id, job_name, queue, filter_status, only_job_id_out):
                             )
 
         url = ctx.obj.url
-        auth = HTTPBasicAuth('apikey', ctx.obj.key)
-        post = requests.post(url, auth=auth, data=message)
-
-        j = post.json()
+        header = {"x-api-key" : ctx.obj.key}
+        post = requests.post(url, data=message, headers=header)
         
+        j = post.json()
         items = j['Items']
 
         counts = {}
@@ -221,8 +220,8 @@ def cli(ctx, job_id, job_name, queue, filter_status, only_job_id_out):
                             )
 
             url = ctx.obj.url
-            auth = HTTPBasicAuth('apikey', ctx.obj.key)
-            post = requests.post(url, auth=auth, data=message)
+            header = {"x-api-key" : ctx.obj.key}
+            post = requests.post(url, data=message, headers=header)
 
             j = post.json()
             items = j['Items']

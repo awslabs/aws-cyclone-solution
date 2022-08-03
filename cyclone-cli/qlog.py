@@ -79,8 +79,8 @@ def cli(ctx, job_id, queue, log_type):
     )
 
     url = ctx.obj.url
-    auth = HTTPBasicAuth('apikey', ctx.obj.key)
-    post = requests.post(url, auth=auth, data=message)
+    header = {"x-api-key" : ctx.obj.key}
+    post = requests.post(url, data=message, headers=header)
 
     j = post.json()
     log_full = []

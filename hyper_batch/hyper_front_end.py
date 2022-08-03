@@ -206,9 +206,10 @@ class HyperFrontEnd(core.Stack):
             api_config_lambda.add_environment("STACK_NAME", stack_name)
 
             job_api = apigateway.LambdaRestApi(self, str(stack_name +'-job-api'),
-                handler=api_handler_lambda,
+                handler=api_config_lambda,
+                api_key_source_type=apigateway.ApiKeySourceType.HEADER,
                 deploy_options={
-                "logging_level": apigateway.MethodLoggingLevel.INFO,
+                "logging_level": apigateway.MethodLoggingLevel.ERROR,
                 "data_trace_enabled": True,
                 "access_log_destination": apigateway.LogGroupLogDestination(logs.LogGroup(self, str(stack_name +'-logs-api'), retention=logs.RetentionDays('TWO_MONTHS'))),
                 "access_log_format": apigateway.AccessLogFormat.json_with_standard_fields(
@@ -223,15 +224,37 @@ class HyperFrontEnd(core.Stack):
                         user=True
                     )}
             )
-
-            key = job_api.add_api_key('job_api_key', api_key_name=str(stack_name +'-api-key'), value=api_key_value)
-            key.apply_removal_policy(core.RemovalPolicy.DESTROY)
-            job_api.add_usage_plan("usage_plan", api_key=key, throttle=apigateway.ThrottleSettings(rate_limit=10000, burst_limit=5000))
+            
             job_api_jobs = job_api.root.add_resource("jobs")
-            job_api_jobs.add_method("POST")
+            job_integration = apigateway.LambdaIntegration(api_handler_lambda)
+            job_method = job_api_jobs.add_method("POST", job_integration, api_key_required=True)
+
             job_api_config = job_api.root.add_resource("config")
             config_integration = apigateway.LambdaIntegration(api_config_lambda)
-            job_api_config.add_method("POST", config_integration)
+            config_method = job_api_config.add_method("POST", config_integration, api_key_required=True)
+
+            job_usage_plan = job_api.add_usage_plan("job_usage_plan", throttle=apigateway.ThrottleSettings(rate_limit=10000, burst_limit=5000))
+            key = job_api.add_api_key('job_api_key', api_key_name=str(stack_name +'-api-key'), value=api_key_value)
+            job_usage_plan.add_api_key(key)
+
+            job_usage_plan.add_api_stage(stage=job_api.deployment_stage, throttle=[
+                apigateway.ThrottlingPerMethod(
+                    method=job_method,
+                    throttle=apigateway.ThrottleSettings(
+                        rate_limit=10000,
+                        burst_limit=5000
+                    )
+                ),
+                apigateway.ThrottlingPerMethod(
+                    method=config_method,
+                    throttle=apigateway.ThrottleSettings(
+                        rate_limit=1,
+                        burst_limit=2
+                    )
+                )
+                ]
+            )
+
 
             core.CfnOutput(self, "API_URL", value=job_api_config.url)
             ssm.StringParameter(self, str(stack_name + '-api-url-ssm'), string_value=job_api_config.url, parameter_name=str(stack_name + '_api_url'))

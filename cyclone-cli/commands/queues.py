@@ -31,8 +31,8 @@ def get(url, key, table, name):
                         }  
     )
 
-    auth = HTTPBasicAuth('apikey', key)
-    post = requests.post(url, auth=auth, data=message)
+    header = {"x-api-key" : key}
+    post = requests.post(url, data=message, headers=header)
 
     j = post.json()
     return j['Item']
@@ -45,8 +45,8 @@ def scan(url, key, table):
                         "payload":{}
                     }
                     )
-    auth = HTTPBasicAuth('apikey', key)
-    post = requests.post(url, auth=auth, data=message)
+    header = {"x-api-key" : key}
+    post = requests.post(url, data=message, headers=header)
 
     j = post.json()
     return j['Items']
@@ -57,8 +57,8 @@ def post(url, key, table, item):
         "TableName": table,
         "payload": {"Item": item}
     }  
-    auth = HTTPBasicAuth('apikey', key)
-    post = requests.post(url, auth=auth, data=json.dumps(message))
+    header = {"x-api-key" : key}
+    post = requests.post(url, data=json.dumps(message), headers=header)
     return post.json()
 
 @click.group()
