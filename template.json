@@ -1,7 +1,7 @@
 {
     "Outputs": {
         "APIKEY": {
-            "Value": "V0716gNj9-9SQDDobIC-3HHsYwULMAcFlA"
+            "Value": "placeholder_api_key"
         },
         "APIURL": {
             "Value": {
@@ -655,7 +655,7 @@
             "Properties": {
                 "Name": "place-holder_api_key",
                 "Type": "String",
-                "Value": "V0716gNj9-9SQDDobIC-3HHsYwULMAcFlA"
+                "Value": "placeholder_api_key"
             },
             "Type": "AWS::SSM::Parameter"
         },
@@ -918,6 +918,7 @@
         },
         "placeholderjobapi33E0C5D1": {
             "Properties": {
+                "ApiKeySourceType": "HEADER",
                 "Name": "place-holder-job-api"
             },
             "Type": "AWS::ApiGateway::RestApi"
@@ -927,7 +928,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": {
                     "Fn::GetAtt": [
-                        "placeholderApiHandlerLambda10057CF7",
+                        "placeholderApiConfigLambda73DE0091",
                         "Arn"
                     ]
                 },
@@ -956,7 +957,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": {
                     "Fn::GetAtt": [
-                        "placeholderApiHandlerLambda10057CF7",
+                        "placeholderApiConfigLambda73DE0091",
                         "Arn"
                     ]
                 },
@@ -1002,7 +1003,7 @@
                                 ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
                                 {
                                     "Fn::GetAtt": [
-                                        "placeholderApiHandlerLambda10057CF7",
+                                        "placeholderApiConfigLambda73DE0091",
                                         "Arn"
                                     ]
                                 },
@@ -1068,7 +1069,7 @@
             },
             "Type": "AWS::IAM::Role"
         },
-        "placeholderjobapiDeployment4A706EC3d2063066a16a1e6bd02cb4d54ab6ec51": {
+        "placeholderjobapiDeployment4A706EC36e33c1c848a36d7a9514c55c111f7fed": {
             "DependsOn": [
                 "placeholderjobapiproxyANY3FF1E2DA",
                 "placeholderjobapiproxy00F23A21",
@@ -1101,13 +1102,13 @@
                     "Format": "{\"requestId\":\"$context.requestId\",\"ip\":\"$context.identity.sourceIp\",\"user\":\"$context.identity.user\",\"caller\":\"$context.identity.caller\",\"requestTime\":\"$context.requestTime\",\"httpMethod\":\"$context.httpMethod\",\"resourcePath\":\"$context.resourcePath\",\"status\":\"$context.status\",\"protocol\":\"$context.protocol\",\"responseLength\":\"$context.responseLength\"}"
                 },
                 "DeploymentId": {
-                    "Ref": "placeholderjobapiDeployment4A706EC3d2063066a16a1e6bd02cb4d54ab6ec51"
+                    "Ref": "placeholderjobapiDeployment4A706EC36e33c1c848a36d7a9514c55c111f7fed"
                 },
                 "MethodSettings": [
                     {
                         "DataTraceEnabled": true,
                         "HttpMethod": "*",
-                        "LoggingLevel": "INFO",
+                        "LoggingLevel": "ERROR",
                         "ResourcePath": "/*"
                     }
                 ],
@@ -1135,6 +1136,7 @@
         },
         "placeholderjobapiconfigPOST7BCB2E4B": {
             "Properties": {
+                "ApiKeyRequired": true,
                 "AuthorizationType": "NONE",
                 "HttpMethod": "POST",
                 "Integration": {
@@ -1232,7 +1234,6 @@
             "Type": "AWS::Lambda::Permission"
         },
         "placeholderjobapijobapikey25A516AE": {
-            "DeletionPolicy": "Delete",
             "Properties": {
                 "Enabled": true,
                 "Name": "place-holder-api-key",
@@ -1246,10 +1247,9 @@
                         }
                     }
                 ],
-                "Value": "V0716gNj9-9SQDDobIC-3HHsYwULMAcFlA"
+                "Value": "placeholder_api_key"
             },
-            "Type": "AWS::ApiGateway::ApiKey",
-            "UpdateReplacePolicy": "Delete"
+            "Type": "AWS::ApiGateway::ApiKey"
         },
         "placeholderjobapijobsB9B9EEF4": {
             "Properties": {
@@ -1268,6 +1268,7 @@
         },
         "placeholderjobapijobsPOST6A9B2E50": {
             "Properties": {
+                "ApiKeyRequired": true,
                 "AuthorizationType": "NONE",
                 "HttpMethod": "POST",
                 "Integration": {
@@ -1284,7 +1285,7 @@
                                 ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
                                 {
                                     "Fn::GetAtt": [
-                                        "placeholderApiHandlerLambda10057CF7",
+                                        "placeholderApiConfigLambda73DE0091",
                                         "Arn"
                                     ]
                                 },
@@ -1307,7 +1308,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": {
                     "Fn::GetAtt": [
-                        "placeholderApiHandlerLambda10057CF7",
+                        "placeholderApiConfigLambda73DE0091",
                         "Arn"
                     ]
                 },
@@ -1336,7 +1337,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": {
                     "Fn::GetAtt": [
-                        "placeholderApiHandlerLambda10057CF7",
+                        "placeholderApiConfigLambda73DE0091",
                         "Arn"
                     ]
                 },
@@ -1363,6 +1364,47 @@
                 }
             },
             "Type": "AWS::Lambda::Permission"
+        },
+        "placeholderjobapijobusageplanCB2E8481": {
+            "Properties": {
+                "ApiStages": [
+                    {
+                        "ApiId": {
+                            "Ref": "placeholderjobapi33E0C5D1"
+                        },
+                        "Stage": {
+                            "Ref": "placeholderjobapiDeploymentStageprod91429BCA"
+                        },
+                        "Throttle": {
+                            "/config/POST": {
+                                "BurstLimit": 2,
+                                "RateLimit": 1
+                            },
+                            "/jobs/POST": {
+                                "BurstLimit": 5000,
+                                "RateLimit": 10000
+                            }
+                        }
+                    }
+                ],
+                "Throttle": {
+                    "BurstLimit": 5000,
+                    "RateLimit": 10000
+                }
+            },
+            "Type": "AWS::ApiGateway::UsagePlan"
+        },
+        "placeholderjobapijobusageplanUsagePlanKeyResource1363D171": {
+            "Properties": {
+                "KeyId": {
+                    "Ref": "placeholderjobapijobapikey25A516AE"
+                },
+                "KeyType": "API_KEY",
+                "UsagePlanId": {
+                    "Ref": "placeholderjobapijobusageplanCB2E8481"
+                }
+            },
+            "Type": "AWS::ApiGateway::UsagePlanKey"
         },
         "placeholderjobapiproxy00F23A21": {
             "Properties": {
@@ -1397,7 +1439,7 @@
                                 ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
                                 {
                                     "Fn::GetAtt": [
-                                        "placeholderApiHandlerLambda10057CF7",
+                                        "placeholderApiConfigLambda73DE0091",
                                         "Arn"
                                     ]
                                 },
@@ -1420,7 +1462,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": {
                     "Fn::GetAtt": [
-                        "placeholderApiHandlerLambda10057CF7",
+                        "placeholderApiConfigLambda73DE0091",
                         "Arn"
                     ]
                 },
@@ -1449,7 +1491,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": {
                     "Fn::GetAtt": [
-                        "placeholderApiHandlerLambda10057CF7",
+                        "placeholderApiConfigLambda73DE0091",
                         "Arn"
                     ]
                 },
@@ -1476,27 +1518,6 @@
                 }
             },
             "Type": "AWS::Lambda::Permission"
-        },
-        "placeholderjobapiusageplanB22AD99A": {
-            "Properties": {
-                "Throttle": {
-                    "BurstLimit": 5000,
-                    "RateLimit": 10000
-                }
-            },
-            "Type": "AWS::ApiGateway::UsagePlan"
-        },
-        "placeholderjobapiusageplanUsagePlanKeyResourceCDC76557": {
-            "Properties": {
-                "KeyId": {
-                    "Ref": "placeholderjobapijobapikey25A516AE"
-                },
-                "KeyType": "API_KEY",
-                "UsagePlanId": {
-                    "Ref": "placeholderjobapiusageplanB22AD99A"
-                }
-            },
-            "Type": "AWS::ApiGateway::UsagePlanKey"
         },
         "placeholderjoburlF574CA0C": {
             "Properties": {
