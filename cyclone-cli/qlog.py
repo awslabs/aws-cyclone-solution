@@ -23,7 +23,7 @@ from datetime import datetime
 import json
 import os
 import requests
-from requests.auth import HTTPBasicAuth
+
 
 
 def get_config(json_dir):
@@ -92,7 +92,7 @@ def cli(ctx, job_id, queue, log_type):
                             "payload":{"bucket": bucket_name, "key": key}
                         }  
             )
-        post = requests.post(url, auth=auth, data=message)
+        post = requests.post(url, data=message, headers=header)
         log_raw = post.json()
         for line in log_raw['data']:
             if log_type in line['log_type']:
