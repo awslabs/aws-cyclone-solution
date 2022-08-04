@@ -81,7 +81,9 @@ class Clusters(core.Stack):
                         'dynamodb:ListStreams',
                         'dynamodb:DescribeStream',
                         'dynamodb:GetRecords',
-                        'dynamodb:GetShardIterator'
+                        'dynamodb:GetShardIterator',
+                        "dynamodb:Query",
+                        "dynamodb:UpdateItem"
                     ]),
                     iam.PolicyStatement(resources=[f'arn:aws:s3:::{stack_name}-images-{self.region}',f'arn:aws:s3:::{stack_name}-images-{self.region}/*'], actions=[
                         "s3:*",
