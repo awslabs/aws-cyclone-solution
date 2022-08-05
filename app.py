@@ -30,12 +30,12 @@ def get_config(json_dir):
             config = json.load(json_file)
             return config
 
-#get configurations for region and stack name, this should come from dynamo later and gracefully handle empty regions
+#get configurations for stack from hyper_batch/configurations/settings.json and pull in region config from
 settings = get_config("./hyper_batch/configuration/settings.json")
 stack_name = settings['stack_settings']['stack_name']
 account = settings['stack_settings']['account']
 enable_dashboard = settings['stack_settings']['enable_dashboard']
-
+#get region configurations from hyper_batch/configurations/regions.json
 all_regions = get_config("./hyper_batch/configuration/regions.json")
 all_regions = all_regions['regions']
 for item in all_regions:
@@ -43,9 +43,16 @@ for item in all_regions:
         main_region = item
 
 ###############cdk app
+#---------------------
 app = core.App()
-##########main region stacks
 
+################# main region stacks
+#-----------------------------------
+
+####### front-end stack in main region
+# THE FRONT-END-STACK IS TURNED OFF BY DEFAULT AND EXISTS IN SYNTHESIZED FORMAT IN "template.json" instead
+# It is deployed via HYPER CLI using AWS CLI call to AWS Cloudformation that point to template.json. The HYPER CLI will replace parameters in template.json to include user input configurations.
+# If you want to make changes to this stack and re-synthesize the template.json (use cf-update.py for this) or simply deploy front-end-stack via CDK you can turn it on by setting environment parameter "DEPLOYED=False"
 try:
     deployed = os.environ.get("DEPLOYED")
     print('DEPLOYED = ' + deployed)
@@ -53,69 +60,63 @@ except Exception:
     deployed = 'True'
 
 if deployed == 'False':
-    #front-end stack in main region
     front_end_stack_name = stack_name + '-front-end-' + main_region['region']
     print('Load front-end for main region '+ main_region['region'])
     HyperFrontEnd(app, front_end_stack_name, env=core.Environment(account= account, region=main_region['region']), account=account, stack_name=stack_name, enable_dashboard=enable_dashboard, import_vpc=main_region['import_vpc'], vpc_id=main_region['vpc_id'], cidr=main_region['cidr'])
 
-#cluster stack in main region
+####### cluster stack in main region
 print('Load Clusters for main region '+ main_region['region'])
 cluster_stack_name = stack_name + '-clusters-' + main_region['region']
 main_region_clusters = Clusters(app, cluster_stack_name, env=core.Environment(account= account, region=main_region['region']), stack_name=stack_name, main_region=main_region['region'], is_main_region=main_region['main_region'],  import_vpc=main_region['import_vpc'], cidr=main_region['cidr'], vpc_id=main_region['vpc_id'], deploy_vpc_endpoints=main_region['deploy_vpc_endpoints'])
 
-
-#back-end stack in main region
+####### core stack in main region
 main_region_backend_stack_name = stack_name + '-core-' + main_region['region']
 print('Load back-end for main region '+ main_region['region'])
 HyperBatchCore(app, main_region_backend_stack_name, env=core.Environment(account= account,region=main_region['region']), stack_name=stack_name, main_region=main_region['region'], is_main_region=main_region['main_region'],  import_vpc=main_region['import_vpc'], cidr=main_region['cidr'], vpc_id=main_region['vpc_id'], enable_dashboard=enable_dashboard).add_dependency(main_region_clusters)
 
-#core_and_cluster_main = core.ConcreteDependable()
-#core_and_cluster_main.add(main_region_clusters)
-#core_and_cluster_main.add(main_region_core)
-
-
-#queue stack in main region
+####### queue stack in main region
 queue_stack_name = stack_name + '-queues-' + main_region['region']
 print('Load Queues for main region '+ main_region['region'])
 Queues(app, queue_stack_name, env=core.Environment(account= account, region=main_region['region']), main_region=main_region['region'], enable_dashboard=enable_dashboard, stack_name=stack_name).add_dependency(main_region_clusters)
 
-
-#task definition stack in main region
+####### task definition stack in main region
 print('Load Task Definitions for main region '+ main_region['region'])
 taskdef_stack_name = stack_name + '-taskDefinitions-' + main_region['region']
 JobDefinitions(app, taskdef_stack_name, env=core.Environment(account= account, region=main_region['region']), is_main_region=main_region['main_region'], stack_name=stack_name).add_dependency(main_region_clusters)
 
-#images stack in main region
+####### images stack in main region
 print('Load Images for main region '+ main_region['region'])
 image_stack_name = stack_name + '-images-' + main_region['region']
 Images(app, image_stack_name, env=core.Environment(account= account, region=main_region['region']), main_region=main_region['region'], stack_name=stack_name)
 
+####### dashboard stack in main region
 if enable_dashboard == "True":
-    #dashboard stack in main region
     print('Load Dashboard for main region '+ main_region['region'])
     dashboard_stack_name = stack_name + '-dashboard-' + main_region['region']
     Dashboard(app, dashboard_stack_name, env=core.Environment(account= account, region=main_region['region']), stack_name=stack_name).add_dependency(main_region_clusters)
 
-#######hub region stacks
+
+############## hub region stacks
+#-----------------------------------
 
 for region in all_regions:
     if region['main_region'] == 'False':
-        #back end stack in hub region
+        ####### core stack in hub region
         print('Load Hub Region '+ region['region'])
         hub_name = stack_name + '-core-' + region['region']
         HyperBatchCore(app, hub_name, env=core.Environment(account=account, region=region['region']), stack_name=stack_name, main_region=main_region['region'], is_main_region=region['main_region'],  import_vpc=region['import_vpc'], cidr=region['cidr'], vpc_id=region['vpc_id'], peer_with_main_region=region['peer_with_main_region'], enable_dashboard=enable_dashboard).add_dependency(main_region_clusters)
         
-        #cluster stack in hub region
+        ####### cluster stack in hub region
         print('Load Clusters for hub region '+ region['region'])
         cluster_stack_name = stack_name + '-clusters-' + region['region']
         Clusters(app, cluster_stack_name, env=core.Environment(account=account, region=region['region']), stack_name=stack_name, main_region=main_region['region'], is_main_region=region['main_region'],  import_vpc=region['import_vpc'], cidr=region['cidr'], vpc_id=region['vpc_id'], peer_with_main_region=region['peer_with_main_region'], deploy_vpc_endpoints=region['deploy_vpc_endpoints']).add_dependency(main_region_clusters)
 
-        #task definition stack in hub region
+        ####### task definition stack in hub region
         print('Load Task Definitions for hub region '+ region['region'])
         taskdef_stack_name = stack_name + '-taskDefinitions-' + region['region']
         JobDefinitions(app, taskdef_stack_name, env=core.Environment(account=account, region=region['region']), is_main_region=region['main_region'], stack_name=stack_name).add_dependency(main_region_clusters)
 
-        #images stack in main region
+        ####### images stack in main region
         print('Load Images for hub region '+ region['region'])
         image_stack_name = stack_name + '-images-' + region['region']
         Images(app, image_stack_name, env=core.Environment(account=account, region=region['region']), main_region=main_region['region'], stack_name=stack_name)
