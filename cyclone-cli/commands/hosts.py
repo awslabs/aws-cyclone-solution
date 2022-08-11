@@ -390,17 +390,11 @@ def create_host(ctx, name, account, region, enable_dashboard, vpc, auto_init_mai
 @click.option('--region', required=True, default=get_region(), prompt='Region it is deployed in', help='Region it is deployed in, e.g. eu-west-1')
 def update_host(ctx, name, account, region):
     """Any changes to your solution stacks in your local repo will be pushed to existing host"""
-    client = boto3.client('ec2', region_name=region)
+    client = boto3.client('cloudformation', region_name=region)
     try:
-        response = client.describe_instances(
-            Filters=[
-                {
-                    'Name': 'tag:aws:cloudformation:stack-name',
-                    'Values': [name]
-                },
-            ]
+        response = client.describe_stacks(
+            StackName=name,
         )
-        instance_id = response['Reservations'][0]['Instances'][0]['InstanceId']
     except Exception:
         click.echo(f'Could not find host {name} in account {account} in region {region}')
         return
@@ -427,18 +421,8 @@ def update_host(ctx, name, account, region):
         click.echo('Failed to push image to ecr, this can happen with slower internet in which case rerunning the last command "bash push_to..." allows you to still push image.')
         return
     
-    response = client.terminate_instances(
-        InstanceIds=[instance_id]
-    )
-    try:
-        response = client.terminate_instances(
-            InstanceIds=[instance_id]
-        )
-        click.echo(f'Terminated {instance_id} to force new image to be pulled on restart, this will take a few min to complete')
-        click.echo(f'UPDATE FINISHED!')
-    except Exception:
-        click.echo(f'Failed to restart ec2 instance for host to update container, please terminate {instance_id} manually from concole')
-        return
+    click.echo(f'UPDATE FINISHED!')
+
 
 @hosts.command()
 @click.pass_context

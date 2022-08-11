@@ -24,7 +24,7 @@ import json
 from subprocess import Popen, PIPE
 from subprocess import check_output
 import requests
-from requests.auth import HTTPBasicAuth
+
 
 from commands.hosts import hosts
 from commands.regions import regions

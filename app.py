@@ -50,9 +50,10 @@ app = core.App()
 #-----------------------------------
 
 ####### front-end stack in main region
-# THE FRONT-END-STACK IS TURNED OFF BY DEFAULT AND EXISTS IN SYNTHESIZED FORMAT IN "template.json" instead
-# It is deployed via HYPER CLI using AWS CLI call to AWS Cloudformation that point to template.json. The HYPER CLI will replace parameters in template.json to include user input configurations.
-# If you want to make changes to this stack and re-synthesize the template.json (use cf-update.py for this) or simply deploy front-end-stack via CDK you can turn it on by setting environment parameter "DEPLOYED=False"
+# THE FRONT-END-STACK IS TURNED OFF BY DEFAULT
+# It instead exists in synthesized format as "template.json". It is deployed via HYPER CLI using AWS CLI call to AWS Cloudformation that point to template.json.
+# The HYPER CLI will replace parameters in template.json to include user input configurations. If you want to make changes to this stack and re-synthesize
+# template.json (use cf-update.py for this) or simply use CDK to deploy it you can turn it on by setting environment parameter "DEPLOYED=False"
 try:
     deployed = os.environ.get("DEPLOYED")
     print('DEPLOYED = ' + deployed)

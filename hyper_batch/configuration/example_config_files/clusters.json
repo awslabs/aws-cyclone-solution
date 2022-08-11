@@ -6,7 +6,8 @@
             "allocation_strategy": "SPOT_CAPACITY_OPTIMIZED",
             "bid_percentage": 100,
             "max_vCPUs": 1000,
-            "iam_policies":[]
+            "iam_policies":[],
+            "main_region_image_name": null
         },
         {
             "clusterName": "sample-cluster-2",
@@ -15,7 +16,8 @@
             "allocation_strategy": "SPOT_CAPACITY_OPTIMIZED",
             "bid_percentage": 100,
             "max_vCPUs": 1000,
-            "iam_policies":[]
+            "iam_policies":[],
+            "main_region_image_name": null
         }
     ]
   }

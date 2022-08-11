@@ -33,6 +33,8 @@ import jsonpickle
 #USE TO START ON WORKER VIA start.sh (also for local testing)
 # python3 0-worker-agent/batch_processor.py --sf_arn arn:aws:states:xxxx:xxxxx:stateMachine:xxxx --async_table tableName --sqs_job_definition jobDefname --region region --main_region region --stack_name stackName
 
+ENABLE_QLOG = os.getenv("ENABLE_QLOG", "True")
+
 LOG_LEVEL = os.getenv("LOG_LEVEL", logging.ERROR)
 logger = logging.getLogger()
 logger.setLevel(LOG_LEVEL)
@@ -106,21 +108,22 @@ def main():
 
 
     def log_push(stack_name, JobName, jobDefinition, JobQueue, buffer):
-        # Send to kinesis log stream in main region
-        list_pack =[]
-        time_stamp = datetime.now().isoformat()
-        for line in buffer:
-            list_pack.append({'time_stamp': time_stamp, 'log_type': 'STDOUT', 'id': JobName, 'jobDefinition': jobDefinition, 'jobQueue': JobQueue, 'data': line})
-        try:
-            kinesis_response = kinesis.put_record(
-                StreamName=stack_name + '_log_stream',
-                Data=bytes(json.dumps(list_pack, default=str), 'utf-8'),
-                PartitionKey=jobDefinition
-            )
-            logger.info('## SENT LOG PACKAGE: ' + jsonpickle.encode(datetime.now()))
-        except Exception as e:
-            logger.error('## FAILED TO SEND LOGS PACKAGE: ' + jsonpickle.encode(e) + ' -- ' + jsonpickle.encode(datetime.now()))
-            pass
+        if not ENABLE_QLOG == 'False' or ENABLE_QLOG == False:
+            # Send to kinesis log stream in main region
+            list_pack =[]
+            time_stamp = datetime.now().isoformat()
+            for line in buffer:
+                list_pack.append({'time_stamp': time_stamp, 'log_type': 'STDOUT', 'id': JobName, 'jobDefinition': jobDefinition, 'jobQueue': JobQueue, 'data': line})
+            try:
+                kinesis_response = kinesis.put_record(
+                    StreamName=stack_name + '_log_stream',
+                    Data=bytes(json.dumps(list_pack, default=str), 'utf-8'),
+                    PartitionKey=jobDefinition
+                )
+                logger.info('## SENT LOG PACKAGE: ' + jsonpickle.encode(datetime.now()))
+            except Exception as e:
+                logger.error('## FAILED TO SEND LOGS PACKAGE: ' + jsonpickle.encode(e) + ' -- ' + jsonpickle.encode(datetime.now()))
+                pass
     
     def do_work(cmd, callback, stack_name, JobName, jobDefinition, JobQueue):
         try:

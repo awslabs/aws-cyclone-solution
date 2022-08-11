@@ -106,6 +106,8 @@ def lambda_handler(event, context):
             
 
     if operation == 'GET' or 'POST' or 'PUT' or 'LIST' or 'QUERY':
+        if operation == 'POST':
+            body['payload'] = json.loads(json.dumps(body['payload']), parse_float=decimal.Decimal)
         return respond(None, operations[operation](dynamo, body['payload']))
     else:
         logger.error('## Unsupported method ' + jsonpickle.encode(operation))

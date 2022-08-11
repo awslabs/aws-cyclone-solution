@@ -34,6 +34,7 @@ import jsii
 import boto3
 import json
 import uuid
+import time
 
 
 def get_config(json_dir):
@@ -352,6 +353,69 @@ class Clusters(core.Stack):
                 max_vCPUs = 0
             else:
                 max_vCPUs = round(0.5 + cluster['max_vCPUs'] / 3)
+            
+            image_object = None
+            if not cluster['main_region_image_name'] == None or cluster['main_region_image_name'] == '':
+                ec2_local = boto3.client('ec2', region_name=self.region)
+                images = ec2_local.describe_images(Filters=[{'Name': 'name', 'Values': [cluster['main_region_image_name']]}])
+            
+                if len(images['Images']) > 0:
+                    for image in images['Images']:
+                        if image['Name'] == cluster['main_region_image_name']:
+                            print('Found {} in {}'.format(cluster['main_region_image_name'], self.region))
+                            ami_id = image['ImageId']
+                            image_object = ec2.MachineImage.generic_linux({self.region : ami_id})
+
+                else:
+                    print('Could not find AMI {} in {}, copying it from main region'.format(cluster['main_region_image_name'], self.region))
+                    ec2_main = boto3.client('ec2', region_name=main_region)
+                    main_images = ec2_main.describe_images(Filters=[{'Name': 'name', 'Values': [cluster['main_region_image_name']]}])
+            
+                    if len(main_images['Images']) > 0:
+                        for image in main_images['Images']:
+                            if image['Name'] == cluster['main_region_image_name']:
+                                ami_id = image['ImageId']
+                    
+                    else:
+                        print('DID NOT FIND {} in {}'.format(cluster['main_region_image_name'], main_region))
+                        raise ValueError
+
+                    raw_ami_id = ec2_local.copy_image(
+                        Name=cluster['main_region_image_name'],
+                        SourceImageId=ami_id,
+                        SourceRegion=main_region
+                    )
+                    ami_id = raw_ami_id['ImageId']
+                    while True:
+                        time.sleep(30)
+                        copy_images = ec2_local.describe_images(ImageIds=[ami_id])
+                        if copy_images['Images'][0]['State'] == 'pending':
+                            print('COPY PENDING')
+                            continue
+                        elif copy_images['Images'][0]['State'] == 'available' and copy_images['Images'][0]['Name'] == cluster['main_region_image_name']:
+                            print('Copy successful')
+                            break
+                        else:
+                            print('COPY FAILED')
+                            print(json.dumps(copy_images))
+                            raise ValueError
+
+            
+                    if len(main_images['Images']) > 0:
+                        for image in main_images['Images']:
+                            if image['Name'] == cluster['main_region_image_name']:
+                                ami_id = image['ImageId']
+                    ami_id = raw_ami_id['ImageId']
+                    image_object = ec2.MachineImage.generic_linux({self.region : ami_id})
+                    print('AMI copied and available to cyclone')
+
+
+
+            lt_raw = ec2.CfnLaunchTemplate(self, stack_name + '-' + cluster['clusterName'] + '-' + 'lt',
+                launch_template_name=stack_name + '-' + cluster['clusterName'] + '-' + 'lt',
+                launch_template_data=ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(instance_type="t3.small")
+                )
+            lt = batch.LaunchTemplateSpecification(launch_template_name=lt_raw.launch_template_name)
 
             for i in range(1, 4, 1):
                 CE_name = batch.ComputeEnvironment(self, id=stack_name + '-' + cluster['clusterName'] + '-' + str(i),
@@ -359,6 +423,8 @@ class Clusters(core.Stack):
                         "type": batch.ComputeResourceType(cluster['type']),
                         "allocation_strategy": batch.AllocationStrategy(cluster['allocation_strategy']),
                         "instance_types": instance_types,
+                        "launch_template": lt,
+                        "image": image_object,
                         "bid_percentage": cluster['bid_percentage'], # Bids for resources at 75% of the on-demand price
                         "vpc": vpc,
                         "maxv_cpus": int(cluster['max_vCPUs'] / 3),

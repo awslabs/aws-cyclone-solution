@@ -19,7 +19,8 @@ from aws_cdk import (
     aws_ecs as ecs,
     aws_iam as iam,
     aws_sqs as sqs,
-    aws_ssm as ssm
+    aws_ssm as ssm,
+    aws_ec2 as ec2
     )
 
 import json
@@ -124,6 +125,21 @@ class JobDefinitions(core.Stack):
                 print(e)
                 print(f'ERROR: mount_point list could not be interpreted --  {mount_point_list}')
 
+            log_config = None
+            try:
+                if 'log_driver' in str(job_definition):
+                    if not job_definition['log_driver'] == None or job_definition['log_driver'] == '':
+                        log_driver = batch.LogDriver(job_definition['log_driver'])
+                else:
+                    log_driver = None
+                if not log_driver == None:
+                    options = job_definition['log_options'] or None
+                    log_config = batch.LogConfiguration(log_driver=log_driver, options=options)
+                else:
+                    log_config = None
+            except Exception as e:
+                print(e)
+                print(f'ERROR: log configs could not be interpreted' )
 
             try:
                 if 'linux_parameters' in job_definitions:
@@ -151,7 +167,6 @@ class JobDefinitions(core.Stack):
             except Exception as e:
                 print(e)
                 print(f'ERROR:host_volume list could not be interpreted --  {str(host_volumes)}')
-           
 
             try:
                 if type(job_definition['ulimits']) == list:
@@ -170,6 +185,11 @@ class JobDefinitions(core.Stack):
                 ulim = json.dumps(job_definition['ulimits'])
                 print(f'ERROR: ulimits could not be interpreted, use null to turn off --  {ulim}')
 
+            if job_definition['enable_qlog'] == "False" or job_definition['enable_qlog'] == False:
+                if job_definition['environment'] == None or job_definition['environment'] == '':
+                    job_definition['environment'] = {}
+                
+                job_definition['environment']['ENABLE_QLOG'] = "False"
 
             container_def = batch.JobDefinitionContainer(
                 image=container,
@@ -179,6 +199,7 @@ class JobDefinitions(core.Stack):
                 linux_params=linux_parameters or None,
                 mount_points=mount_points or None,
                 volumes=host_volumes or None,
+                log_configuration=log_config,
                 ulimits=ulimits or None,
                 gpu_count=job_definition['gpu_count'] or None,
                 environment=job_definition['environment'] or None,

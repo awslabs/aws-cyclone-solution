@@ -19,7 +19,7 @@ from subprocess import Popen, PIPE
 from subprocess import check_output
 import json
 import requests
-from requests.auth import HTTPBasicAuth
+
 
 def get(url, key, table, name):
     message = json.dumps(
@@ -56,7 +56,7 @@ def post(url, key, table, item):
         "operation": "POST",
         "TableName": table,
         "payload": {"Item": item}
-    })  
+    })
     header = {"x-api-key" : key}
     post = requests.post(url, data=message, headers=header)
     return post.json()
@@ -108,7 +108,10 @@ def list_definitions(obj, name):
 @click.option('--user', required=False, default='', prompt='OPTIONAL Set user to use in container', help='OPTIONAL Set user to use in container')
 @click.option('--timeout_minutes', required=False, default='', prompt='OPTIONAL Set a timeout on container', help='Set a timeout on containers if you want to ensure they shut down after a certain amount of time. Keep in mind this is not a job timeout but a worker timeout as jobs run in series on the workers')
 @click.option('--iam-policies', required=False, default=[], prompt='OPTIONAL Add IAM policies to worker role as list of strings e.g ["custom_policy"]', help='Add additional IAM policies to worker role (policies needed by hyper batch are automatically added)')
-def add_definition(obj, name, use_cyclone_image, cyclone_image_name, image_uri, vcpus, memory_limit_mib, linux_parameters, ulimits, mount_points, host_volumes, gpu_count, environment, privileged, user, jobs_to_workers_ratio, timeout_minutes, iam_policies):
+@click.option('--log-driver', required=False, default='', type=click.Choice(['','AWSLOGS', 'FLUENTD', 'GELF', 'JOURNALD', 'JSON_FILE', 'LOGENTRIES', 'SPLUNK', 'SYSLOG'], case_sensitive=False), prompt='OPTIONAL Set a log driver', help='OPTIONAL Set a log driver to use, default is what is configured on docker daemon')
+@click.option('--log-options', required=False, default='', prompt='OPTIONAL Specify options for log driver e.g {"max-size": "10m", "max-file": "3" }', help='OPTIONAL Specify options for log driver e.g {"max-size": "10m", "max-file": "3" }')
+@click.option('--enable-qlog', required=False, default='True', type=click.Choice(['True','False'], case_sensitive=False), prompt='OPTIONAL Enable cyclone log collection for qlog', help='OPTIONAL Enable cyclone log collection for qlog, turning this off can save cost if using another logging mechanism')
+def add_definition(obj, name, use_cyclone_image, cyclone_image_name, image_uri, vcpus, memory_limit_mib, linux_parameters, ulimits, mount_points, host_volumes, gpu_count, environment, privileged, user, jobs_to_workers_ratio, timeout_minutes, iam_policies, log_driver, log_options, enable_qlog):
     """Add a definition to your environment, definitions will span all enabled regions."""
     iam_policies = str(iam_policies).replace("'",'"')
     environment = str(environment).replace("'",'"')
@@ -116,6 +119,7 @@ def add_definition(obj, name, use_cyclone_image, cyclone_image_name, image_uri, 
     mount_points = str(mount_points).replace("'",'"')
     ulimits = str(ulimits).replace("'",'"')
     linux_parameters = str(linux_parameters).replace("'",'"')
+    log_options = str(log_options).replace("'",'"')
 
     definition = {
         "name": name,
@@ -135,6 +139,9 @@ def add_definition(obj, name, use_cyclone_image, cyclone_image_name, image_uri, 
         "jobs_to_workers_ratio": jobs_to_workers_ratio,
         "timeout_minutes": timeout_minutes,
         "iam_policies": iam_policies,
+        "log_driver": log_driver,
+        "log_options": log_options,
+        "enable_qlog": enable_qlog,
         "Status": "Creating",
         "Output_Log": ''
     }
@@ -169,7 +176,10 @@ def add_definition(obj, name, use_cyclone_image, cyclone_image_name, image_uri, 
 @click.option('--jobs-to-workers-ratio', required=False, help='IMPORTANT Ratio to control how many workers get spun up for a given number of jobs submitted. Number of jobs submitted per minute (or 1000) will be divided by this ratio to decide how many additional workers to spin up for those jobs. Ratio 1 means 1 worker for every job and 50 means 1 worker created for every 50 tasks where jobs will then run in series on workers.')
 @click.option('--timeout_minutes', required=False, help='Set a timeout on containers if you want to ensure they shut down after a certain amount of time. Keep in mind this is not a job timeout but a worker timeout as jobs run in series on the workers')
 @click.option('--iam-policies', required=False, help='Add additional IAM policies to worker role (policies needed by hyper batch are automatically added)')
-def update_definition(obj, name, use_cyclone_image, cyclone_image_name, image_uri, vcpus, memory_limit_mib, linux_parameters, ulimits, mount_points, host_volumes, gpu_count, environment, privileged, user, jobs_to_workers_ratio, timeout_minutes, iam_policies):
+@click.option('--log-driver', required=False, type=click.Choice(['','AWSLOGS', 'FLUENTD', 'GELF', 'JOURNALD', 'JSON_FILE', 'LOGENTRIES', 'SPLUNK', 'SYSLOG'], case_sensitive=False), help='OPTIONAL Set user to use in container')
+@click.option('--log-options', required=False, help='OPTIONAL Specify options for log driver e.g {"max-size": "10m", "max-file": "3" }')
+@click.option('--enable-qlog', required=False, type=click.Choice(['True','False'], case_sensitive=False), help='OPTIONAL Enable cyclone log collection for qlog, turning this off can save cost if using another logging mechanism')
+def update_definition(obj, name, use_cyclone_image, cyclone_image_name, image_uri, vcpus, memory_limit_mib, linux_parameters, ulimits, mount_points, host_volumes, gpu_count, environment, privileged, user, jobs_to_workers_ratio, timeout_minutes, iam_policies, log_driver, log_options, enable_qlog):
     """Update specific configurations for an existing definition"""
 
     params_old = get(obj.url, obj.key, obj.name +'_jobDefinitions_table', name)
@@ -212,6 +222,12 @@ def update_definition(obj, name, use_cyclone_image, cyclone_image_name, image_ur
     if not iam_policies == None:
         iam_policies = str(iam_policies).replace("'",'"')
         params_old['iam_policies'] = iam_policies
+    if not log_driver == None:
+        params_old['log_driver'] = log_driver
+    if not log_options == None:
+        params_old['log_options'] = log_options
+    if not enable_qlog == None:
+        params_old['enable_qlog'] = enable_qlog
     params_old['Status'] ='Updating'
     params_old['Output_Log'] =''
 

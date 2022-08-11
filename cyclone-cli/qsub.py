@@ -22,7 +22,7 @@ import json
 import os
 import json
 import requests
-from requests.auth import HTTPBasicAuth
+
 
 
 def get_config(json_dir):

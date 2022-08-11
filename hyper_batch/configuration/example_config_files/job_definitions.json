@@ -17,7 +17,10 @@
           "user": null,
           "jobs_to_workers_ratio": 1,
           "timeout_minutes": null,
-          "iam_policies":[]
+          "iam_policies":[],
+          "log_driver": null,
+          "log_options": null,
+          "enable_qlog": "True"
       },
       {
           "jobDefinitionName": "sample-2-CANNOT-USE",
@@ -36,7 +39,10 @@
           "user": "sample-user",
           "jobs_to_workers_ratio": 1,
           "timeout_minutes": 60,
-          "iam_policies": ["my_customer_managed_policy"]
+          "iam_policies": ["my_customer_managed_policy"],
+          "log_driver": "JSON_FILE",
+          "log_options": {"max-size": "10m", "max-file": "3" },
+          "enable_qlog": "True"
       }
   ]
 }

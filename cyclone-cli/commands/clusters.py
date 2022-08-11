@@ -19,7 +19,7 @@ from subprocess import Popen, PIPE
 from subprocess import check_output
 import json
 import requests
-from requests.auth import HTTPBasicAuth
+
 
 def get(url, key, table, name):
     message = json.dumps(
@@ -99,7 +99,8 @@ def list_clusters(obj, name):
 @click.option('--bid-percentage', required=False, default=None, help='For SPOT only - Bid percentage of on-demand cost')
 @click.option('--allocation-strategy', required=False, default=None, type=click.Choice(['SPOT_CAPACITY_OPTIMIZED','BEST_FIT_PROGRESSIVE', 'BEST_FIT'], case_sensitive=False), help='Batch allocation strategy to use [BEST_FIT_PROGRESSIVE/BEST_FIT/SPOT_CAPACITY_OPTIMIZED')
 @click.option('--iam-policies', required=False, default=[], prompt='OPTIONAL Add IAM policies to instance role as list of strings e.g ["custom_policy"]', help='Add additional IAM policies to instance role in your cluster (policies needed by hyper batch are automatically added)')
-def add_cluster(obj, name, instance_list, max_vcpus, type, bid_percentage, allocation_strategy, iam_policies):
+@click.option('--main-region-image-name', required=False, default='', prompt='OPTIONAL Specify image name that exists in your main region to use for cluster', help='OPTIONAL Specify Image name for an image that exists in your main region that you want to use for cluster. Cyclone will copy the image to any hub regions where it does not exist and use local versions')
+def add_cluster(obj, name, instance_list, max_vcpus, type, bid_percentage, allocation_strategy, iam_policies, main_region_image_name):
     """Add a cluster to your environment, clusters will span all enabled regions."""
     instance_list = str(instance_list).replace("'", '"')
     iam_policies = str(iam_policies).replace("'", '"')
@@ -130,6 +131,7 @@ def add_cluster(obj, name, instance_list, max_vcpus, type, bid_percentage, alloc
         "bid_percentage": bid_percentage,
         "max_vCPUs": max_vcpus,
         "iam_policies": iam_policies,
+        "main_region_image_name": main_region_image_name,
         "Status": "Creating",
         "Output_Log": ''
     }
@@ -154,7 +156,8 @@ def add_cluster(obj, name, instance_list, max_vcpus, type, bid_percentage, alloc
 @click.option('--bid-percentage', required=False, default=None, help='If import-vpc is True then specify the vpc-id to import')
 @click.option('--allocation-strategy', required=False, default=None, help='If set to True a peering connection is automatically create between hub region vpc and main region vpc for network communication')
 @click.option('--iam-policies', required=False, default=None, help='Add additional iam policies to instance role in your cluster e.g ["custom_policy"] (policies needed by hyper batch are automatically added)')
-def update_cluster(obj, name, instance_list, max_vcpus, bid_percentage, type, allocation_strategy, iam_policies):
+@click.option('--main-region-image-name', required=False, default=None, help='OPTIONAL Specify Image name for an image that exists in your main region that you want to use for cluster. Cyclone will copy the image to any hub regions where it does not exist and use local versions')
+def update_cluster(obj, name, instance_list, max_vcpus, bid_percentage, type, allocation_strategy, iam_policies, main_region_image_name):
     """Update specific configurations for an existing cluster"""
 
     params_old = get(obj.url, obj.key, obj.name +'_clusters_table', name)
@@ -171,6 +174,8 @@ def update_cluster(obj, name, instance_list, max_vcpus, bid_percentage, type, al
         params_old['bid_percentage'] = bid_percentage
     if not iam_policies == None:
         params_old['iam_policies'] = iam_policies
+    if not main_region_image_name == None:
+        params_old['main_region_image_name'] = main_region_image_name
     params_old['Status'] ='Updating'
     params_old['Output_Log'] =''
 

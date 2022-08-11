@@ -19,7 +19,7 @@ from subprocess import Popen, PIPE
 from subprocess import check_output
 import json
 import requests
-from requests.auth import HTTPBasicAuth
+
 
 def get(url, key, table, name):
     message = json.dumps(
