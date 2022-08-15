@@ -143,18 +143,59 @@ def lambda_handler(event, context):
 
     if operation == 'POST':
 
-        now = datetime.now().isoformat()
-        body['Item']["id"] = str(uuid.uuid4())
-        body['Item']["Status"] = 'Waiting'
-        body['Item']["Output"] = ' '
-        body['Item']["tCreated"] = now
-        logger.info('## DATA\r' + jsonpickle.encode(body['Item']))
+        if len(body['Item']) == 1:
 
-        if 'jobName' not in body['Item']:
-            body['Item']['jobName'] = body['Item']["id"]
-            
-        payload = {"Item": body['Item']}
-        return respond(None, operations[operation](dynamo, payload), body['Item']["id"])
+            body['Item'] = body['Item'][0]
+
+            now = datetime.now().isoformat()
+            body['Item']["id"] = str(uuid.uuid4())
+            body['Item']["Status"] = 'Waiting'
+            body['Item']["Output"] = ' '
+            body['Item']["tCreated"] = now
+            logger.info('## DATA\r' + jsonpickle.encode(body['Item']))
+
+            if 'jobName' not in body['Item']:
+                body['Item']['jobName'] = body['Item']["id"]
+                
+            payload = {"Item": body['Item']}
+            return respond(None, operations[operation](dynamo, payload), body['Item']["id"])
+        elif len(body['Item']) > 1:
+            now = datetime.now().isoformat()
+            array_id = str(uuid.uuid4())
+            count = 0
+            try:
+                with dynamo.batch_writer() as writer:
+                    for item in body['Item']:
+                        item['id'] = array_id + '--' + str(count)
+                        item["Status"] = 'Waiting'
+                        item["Output"] = ' '
+                        item["tCreated"] = now
+                        logger.info('## DATA\r' + jsonpickle.encode(item))
+        
+                        if 'jobName' not in item:
+                            item['jobName'] = array_id
+                        payload = {"Item": item}
+                        writer.put_item(Item=item)
+                        count = count + 1
+                logger.info("Loaded data into table %s.", dynamo.name)
+                res = {}
+                res['job_id'] = array_id + '--N'
+                return {
+                            'statusCode': '200',
+                            'body': json.dumps(res),
+                            'headers': {
+                                'Content-Type': 'application/json',
+                            },
+                        }
+            except ClientError as e:
+                logger.exception("Couldn't load data into table %s.", dynamo.name)
+                return {
+                        'statusCode': '400',
+                        'body': json.dumps(e),
+                        'headers': {
+                            'Content-Type': 'application/json',
+                        },
+                    }
 
     elif operation == 'GET' or 'DELETE' or 'PUT' or 'LIST' or 'QUERY':
         return respond_2(None, operations[operation](dynamo, body['payload']))

@@ -128,7 +128,7 @@ class JobDefinitions(core.Stack):
             log_config = None
             try:
                 if 'log_driver' in str(job_definition):
-                    if not job_definition['log_driver'] == None or job_definition['log_driver'] == '':
+                    if not job_definition['log_driver'] == None or not job_definition['log_driver'] == '':
                         log_driver = batch.LogDriver(job_definition['log_driver'])
                 else:
                     log_driver = None
@@ -185,10 +185,10 @@ class JobDefinitions(core.Stack):
                 ulim = json.dumps(job_definition['ulimits'])
                 print(f'ERROR: ulimits could not be interpreted, use null to turn off --  {ulim}')
 
-            if job_definition['enable_qlog'] == "False" or job_definition['enable_qlog'] == False:
-                if job_definition['environment'] == None or job_definition['environment'] == '':
+            if job_definition['environment'] == None or job_definition['environment'] == '':
                     job_definition['environment'] = {}
-                
+            job_definition['environment']['CYCLONE_REGION'] = self.region
+            if job_definition['enable_qlog'] == "False" or job_definition['enable_qlog'] == False:
                 job_definition['environment']['ENABLE_QLOG'] = "False"
 
             container_def = batch.JobDefinitionContainer(
