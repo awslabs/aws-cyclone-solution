@@ -24,11 +24,10 @@ from subprocess import Popen, PIPE
 from subprocess import check_output
 import threading
 from cpuinfo import get_cpu_info
-import jsonpickle
 import psutil
 import os
 import logging
-import jsonpickle
+import sys
 
 #USE TO START ON WORKER VIA start.sh (also for local testing)
 # python3 0-worker-agent/batch_processor.py --sf_arn arn:aws:states:xxxx:xxxxx:stateMachine:xxxx --async_table tableName --sqs_job_definition jobDefname --region region --main_region region --stack_name stackName
@@ -36,8 +35,11 @@ import jsonpickle
 ENABLE_QLOG = os.getenv("ENABLE_QLOG", "True")
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", logging.ERROR)
-logger = logging.getLogger()
-logger.setLevel(LOG_LEVEL)
+cyc_root_log = logging.getLogger()
+cyc_root_log.setLevel(LOG_LEVEL)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(LOG_LEVEL)
+cyc_root_log.addHandler(handler)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--sf_arn', nargs=1)
@@ -49,15 +51,19 @@ parser.add_argument('--stack_name', nargs=1)
 args = parser.parse_args()
 
 sf_arn =  args.sf_arn[0]
+cyc_root_log.info('## Initiated worker with sf_arn: \r' + sf_arn)
 table =  args.async_table[0]
+cyc_root_log.info('## Initiated worker with table: \r' + table)
 jobDefinition =  args.sqs_job_definition[0]
+cyc_root_log.info('## Initiated worker with job definition: \r' + jobDefinition)
 region = args.region[0]
+cyc_root_log.info('## Initiated worker with region: \r' + region)
 main_region = args.main_region[0]
+cyc_root_log.info('## Initiated worker with main region: \r' + main_region)
 stack_name = args.stack_name[0]
+cyc_root_log.info('## Initiated worker with stack name: \r' + stack_name)
 
 uuid = str(uuid.uuid4())
-
-logger.info('## Initiated worker with params: \r' + jsonpickle.encode(args))
 
 #dynamo_main = boto3.client('dynamodb', region_name=main_region)
 dynamo = boto3.client('dynamodb', region_name=region)
@@ -83,9 +89,9 @@ def main():
                     sf.send_task_heartbeat(
                         taskToken=TaskToken
                     )
-                    logger.info('## SENT HEARTBEAT TO SF: ' + jsonpickle.encode(datetime.now()))
+                    cyc_root_log.info('## SENT HEARTBEAT TO SF: ' + datetime.now().isoformat())
                 except Exception as e:
-                    logger.error('## FAILED TO SEND HEARTBEAT TO SF: ' + jsonpickle.encode(e) + ' -- ' + jsonpickle.encode(datetime.now()))
+                    cyc_root_log.error('## FAILED TO SEND HEARTBEAT TO SF: ' + str(e) + ' -- ' + datetime.now().isoformat())
                     break
 
                 try:
@@ -99,9 +105,9 @@ def main():
                         Data=bytes(json.dumps(package, default=str), 'utf-8'),
                         PartitionKey=jobDefinition
                     )
-                    logger.info('## SENT METRIC PACKAGE: ' + jsonpickle.encode(datetime.now()))
+                    cyc_root_log.info('## SENT METRIC PACKAGE: ' + datetime.now().isoformat())
                 except Exception as e:
-                    logger.error('## FAILED TO SEND METRICS PACKAGE: ' + jsonpickle.encode(e) + ' -- ' + jsonpickle.encode(datetime.now()))
+                    cyc_root_log.error('## FAILED TO SEND METRICS PACKAGE: ' + str(e) + ' -- ' + datetime.now().isoformat())
                     pass
 
                 time.sleep(20)
@@ -120,9 +126,9 @@ def main():
                     Data=bytes(json.dumps(list_pack, default=str), 'utf-8'),
                     PartitionKey=jobDefinition
                 )
-                logger.info('## SENT LOG PACKAGE: ' + jsonpickle.encode(datetime.now()))
+                cyc_root_log.info('## SENT LOG PACKAGE: ' + datetime.now().isoformat())
             except Exception as e:
-                logger.error('## FAILED TO SEND LOGS PACKAGE: ' + jsonpickle.encode(e) + ' -- ' + jsonpickle.encode(datetime.now()))
+                cyc_root_log.error('## FAILED TO SEND LOGS PACKAGE: ' + str(e) + ' -- ' + datetime.now().isoformat())
                 pass
     
     def do_work(cmd, callback, stack_name, JobName, jobDefinition, JobQueue):
@@ -137,6 +143,7 @@ def main():
             result = ''
             old_time = time.perf_counter()
             for line in iter(proc.stdout.readline, ''):
+                print(line)
                 buffer.append(line[:-1])
                 result = result + line[:-1] + '\n'
 
@@ -151,21 +158,21 @@ def main():
             while proc.poll() is None:
                 pass
             if proc.returncode == 0:
-                logger.info('## JOB SUCCESSFUL: ' + ' -- ' + jsonpickle.encode(datetime.now()))
+                cyc_root_log.info('## JOB SUCCESSFUL: ' + ' -- ' + datetime.now().isoformat())
                 return result, 'Successful'
             else:
                 result = 'FAILED\n' + proc.stderr.read()
                 status = 'Failed'
-                logger.info('## JOB FAILED: ' + jsonpickle.encode(result) + ' -- ' + jsonpickle.encode(datetime.now()))
+                cyc_root_log.error('## JOB FAILED: ' + result + ' -- ' + datetime.now().isoformat())
                 return result, status
         except Exception as e:
-            logger.error('## JOB EXECUTION SUBPROCESS FAILED: ' + jsonpickle.encode(e) + ' -- ' + jsonpickle.encode(datetime.now()))
+            cyc_root_log.error('## JOB EXECUTION SUBPROCESS FAILED: ' + str(e) + ' -- ' + datetime.now().isoformat())
             result = 'FAILED\n' + str(e)
             status = 'Failed'
             return result, status
 
     startTime = datetime.now()
-    logger.info('## WORKER START TIME: ' + jsonpickle.encode(startTime))
+    cyc_root_log.info('## WORKER START TIME: ' + startTime.isoformat())
 
     info = get_cpu_info()
     mem_info = psutil.virtual_memory()._asdict()
@@ -250,7 +257,7 @@ def main():
         LeaveRunning = res['Item']['LeaveRunning']['S']
 
         if not LeaveRunning == 'True':
-            logger.info('## LeaveRunning set to False by State Machine, exiting')
+            cyc_root_log.info('## LeaveRunning set to False by State Machine, exiting')
             response = sf.send_task_success(
                 taskToken=res['Item']['Callback']['S'],
                 output=json.dumps({"sqs_name": jobDefinition,
@@ -269,7 +276,7 @@ def main():
         #see if job in dynamo is new or the previous one and if its not new wait 1 second then check again for 10 times until worker exits
         if JobName == res['Item']['id']['S']:
             fail_safe = fail_safe + 1
-            logger.info('## No new Job in DynamoDB - Same id: ' + jsonpickle.encode(res['Item']['id']['S']))
+            cyc_root_log.info('## No new Job in DynamoDB - Same id: ' + json.dumps(res['Item']['id']['S']))
             time.sleep(1)
             if fail_safe < 10:
                 continue
@@ -277,7 +284,7 @@ def main():
                 break
         
         #run a new job found
-        logger.info('## FOUND NEW JOB IN DYNAMODB - JOB ID: ' + jsonpickle.encode(res['Item']))
+        cyc_root_log.info('## FOUND NEW JOB IN DYNAMODB - JOB ID: ' + json.dumps(res['Item']))
         fail_safe = 0
         update1 = dynamo.update_item(
             TableName=table,
@@ -289,7 +296,7 @@ def main():
             )
         
         now = datetime.now()
-        logger.info('## RUNNING JOB: ' + jsonpickle.encode(now))
+        cyc_root_log.info('## RUNNING JOB: ' + now.isoformat())
 
         JobName = res['Item']['id']['S']
         JobQueue = res['Item']['JobQueue']['S']
@@ -301,7 +308,7 @@ def main():
             t = threading.Thread(target = c.run, kwargs={'TaskToken': token, 'region': region, 'stack_name': stack_name, 'JobName': JobName, 'jobDefinition': jobDefinition, 'JobQueue': JobQueue})
             t.start() 
         except Exception as e:
-            logger.error('## HEARTBEAT THREAD FAILED: ' + jsonpickle.encode(e) + ' -- ' + jsonpickle.encode(datetime.now()))
+            cyc_root_log.error('## HEARTBEAT THREAD FAILED: ' + str(e) + ' -- ' + datetime.now().isoformat())
 
         result, status = do_work(command, log_push, stack_name, JobName, jobDefinition, JobQueue)
         
@@ -324,7 +331,7 @@ def main():
                 except Exception:
                     output = 'Could Not Parse Output Lines'
         except Exception as e:
-            logger.error('## FAILED TO PARSE OUTPUT LINES: ' + jsonpickle.encode(e) + ' -- ' + jsonpickle.encode(datetime.now()))
+            cyc_root_log.error('## FAILED TO PARSE OUTPUT LINES: ' + str(e) + ' -- ' + datetime.now().isoformat())
             output = 'Could not parse output lines from job process'
 
         try: 
@@ -337,11 +344,11 @@ def main():
                         ReturnValues="UPDATED_NEW"
                         )
         except Exception as e:
-            logger.error('## COULD NOT UPDATE DYNAMODB WITH JOB STATUS AND RESULTS: ' + jsonpickle.encode(e) + ' -- ' + jsonpickle.encode(datetime.now()))
+            cyc_root_log.error('## COULD NOT UPDATE DYNAMODB WITH JOB STATUS AND RESULTS: ' + str(e) + ' -- ' + datetime.now().isoformat())
             c.terminate()  
             break
 
-        logger.info('## MARKED JOB AS FINISHED IN DYNAMODB' + ' -- ' + jsonpickle.encode(datetime.now()))
+        cyc_root_log.info('## MARKED JOB AS FINISHED IN DYNAMODB' + ' -- ' + datetime.now().isoformat())
         
         try:
             response = sf.send_task_success(
@@ -356,9 +363,9 @@ def main():
                                         "table": table
                                         })
             )
-            logger.info('## NOTIFIED SF THAT JOB FINISHED' + ' -- ' + jsonpickle.encode(datetime.now()))
+            cyc_root_log.info('## NOTIFIED SF THAT JOB FINISHED' + ' -- ' + datetime.now().isoformat())
         except Exception as e:
-            logger.error('## FAILED TO NOTIFY SF THAT JOB IS FINISHED: ' + jsonpickle.encode(e) + ' -- ' + jsonpickle.encode(datetime.now()))
+            cyc_root_log.error('## FAILED TO NOTIFY SF THAT JOB IS FINISHED: ' + str(e) + ' -- ' + datetime.now().isoformat())
             c.terminate()  
             break
 
@@ -367,8 +374,8 @@ def main():
 
     endTime = datetime.now()
     diffTime = endTime - startTime
-    logger.info('## WORKER END TIME' + ' -- ' + jsonpickle.encode(endTime))
-    logger.info('## WORKER RAN FOR' + ' -- ' + jsonpickle.encode(diffTime))
+    cyc_root_log.info('## WORKER END TIME' + ' -- ' + endTime.isoformat())
+    cyc_root_log.info('## WORKER RAN FOR' + ' -- ' + str(diffTime.seconds) + ' seconds')
 
 if __name__ == '__main__':
    main()
