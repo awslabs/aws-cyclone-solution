@@ -218,7 +218,7 @@ def create_host(ctx, name, account, region, enable_dashboard, vpc, auto_init_mai
 
     if import_vpc == 'True':
         current_name = 'place-holder'
-        current_account = '123456789876'
+        current_account = '123xxxxx9876'
         current_region = 'eu-west-1'
         current_vpc_id = 'vpc-1234xxx1234'
         current_enable_dashboard = 'enable_dashboard_true_or_false'
@@ -226,7 +226,7 @@ def create_host(ctx, name, account, region, enable_dashboard, vpc, auto_init_mai
         current_subnet = 'placeholder_subnet'
         current_api_key = 'placeholder_api_key'
         
-        base_temp = 'template.json'
+        base_temp = 'template copy.json'
         repo = name + '-deploy'
 
         j = get_config(base_temp)

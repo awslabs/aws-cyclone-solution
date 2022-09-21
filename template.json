@@ -446,7 +446,7 @@
                                         {
                                             "Ref": "AWS::Partition"
                                         },
-                                        ":ecr:eu-west-1:123456789876:repository/placeholder_repo"
+                                        ":ecr:eu-west-1:123xxxxx9876:repository/placeholder_repo"
                                     ]
                                 ]
                             }
@@ -488,7 +488,7 @@
                         "Environment": [
                             {
                                 "Name": "ACCOUNT",
-                                "Value": "123456789876"
+                                "Value": "123xxxxx9876"
                             },
                             {
                                 "Name": "STACK_NAME",
@@ -508,7 +508,7 @@
                             "Fn::Join": [
                                 "",
                                 [
-                                    "123456789876.dkr.ecr.eu-west-1.",
+                                    "123xxxxx9876.dkr.ecr.eu-west-1.",
                                     {
                                         "Ref": "AWS::URLSuffix"
                                     },
@@ -604,7 +604,7 @@
                                 "dynamodb:DescribeLimits"
                             ],
                             "Effect": "Allow",
-                            "Resource": "arn:aws:dynamodb:eu-west-1:123456789876:table/*"
+                            "Resource": "arn:aws:dynamodb:eu-west-1:123xxxxx9876:table/*"
                         },
                         {
                             "Action": "s3:*",
@@ -617,17 +617,17 @@
                         {
                             "Action": "kms:Decrypt",
                             "Effect": "Allow",
-                            "Resource": "arn:aws:kms:eu-west-1:123456789876:key/*"
+                            "Resource": "arn:aws:kms:eu-west-1:123xxxxx9876:key/*"
                         },
                         {
                             "Action": "ecs:RunTask",
                             "Effect": "Allow",
-                            "Resource": "arn:aws:ecs:eu-west-1:123456789876:task-definition/place-holder*"
+                            "Resource": "arn:aws:ecs:eu-west-1:123xxxxx9876:task-definition/place-holder*"
                         },
                         {
                             "Action": "iam:PassRole",
                             "Effect": "Allow",
-                            "Resource": "arn:aws:iam::123456789876:role/place-holder*"
+                            "Resource": "arn:aws:iam::123xxxxx9876:role/place-holder*"
                         },
                         {
                             "Action": [
@@ -637,7 +637,7 @@
                                 "logs:DescribeLogStreams"
                             ],
                             "Effect": "Allow",
-                            "Resource": "arn:aws:logs:eu-west-1:123456789876:*"
+                            "Resource": "arn:aws:logs:eu-west-1:123xxxxx9876:*"
                         }
                     ],
                     "Version": "2012-10-17"
@@ -941,7 +941,7 @@
                             {
                                 "Ref": "AWS::Partition"
                             },
-                            ":execute-api:eu-west-1:123456789876:",
+                            ":execute-api:eu-west-1:123xxxxx9876:",
                             {
                                 "Ref": "placeholderjobapi33E0C5D1"
                             },
@@ -970,7 +970,7 @@
                             {
                                 "Ref": "AWS::Partition"
                             },
-                            ":execute-api:eu-west-1:123456789876:",
+                            ":execute-api:eu-west-1:123xxxxx9876:",
                             {
                                 "Ref": "placeholderjobapi33E0C5D1"
                             },
@@ -1069,7 +1069,7 @@
             },
             "Type": "AWS::IAM::Role"
         },
-        "placeholderjobapiDeployment4A706EC36e33c1c848a36d7a9514c55c111f7fed": {
+        "placeholderjobapiDeployment4A706EC35bcb5e218144ba1830b6f716dd297892": {
             "DependsOn": [
                 "placeholderjobapiproxyANY3FF1E2DA",
                 "placeholderjobapiproxy00F23A21",
@@ -1102,7 +1102,7 @@
                     "Format": "{\"requestId\":\"$context.requestId\",\"ip\":\"$context.identity.sourceIp\",\"user\":\"$context.identity.user\",\"caller\":\"$context.identity.caller\",\"requestTime\":\"$context.requestTime\",\"httpMethod\":\"$context.httpMethod\",\"resourcePath\":\"$context.resourcePath\",\"status\":\"$context.status\",\"protocol\":\"$context.protocol\",\"responseLength\":\"$context.responseLength\"}"
                 },
                 "DeploymentId": {
-                    "Ref": "placeholderjobapiDeployment4A706EC36e33c1c848a36d7a9514c55c111f7fed"
+                    "Ref": "placeholderjobapiDeployment4A706EC35bcb5e218144ba1830b6f716dd297892"
                 },
                 "MethodSettings": [
                     {
@@ -1189,7 +1189,7 @@
                             {
                                 "Ref": "AWS::Partition"
                             },
-                            ":execute-api:eu-west-1:123456789876:",
+                            ":execute-api:eu-west-1:123xxxxx9876:",
                             {
                                 "Ref": "placeholderjobapi33E0C5D1"
                             },
@@ -1218,7 +1218,7 @@
                             {
                                 "Ref": "AWS::Partition"
                             },
-                            ":execute-api:eu-west-1:123456789876:",
+                            ":execute-api:eu-west-1:123xxxxx9876:",
                             {
                                 "Ref": "placeholderjobapi33E0C5D1"
                             },
@@ -1285,7 +1285,7 @@
                                 ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
                                 {
                                     "Fn::GetAtt": [
-                                        "placeholderApiConfigLambda73DE0091",
+                                        "placeholderApiHandlerLambda10057CF7",
                                         "Arn"
                                     ]
                                 },
@@ -1308,7 +1308,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": {
                     "Fn::GetAtt": [
-                        "placeholderApiConfigLambda73DE0091",
+                        "placeholderApiHandlerLambda10057CF7",
                         "Arn"
                     ]
                 },
@@ -1321,7 +1321,7 @@
                             {
                                 "Ref": "AWS::Partition"
                             },
-                            ":execute-api:eu-west-1:123456789876:",
+                            ":execute-api:eu-west-1:123xxxxx9876:",
                             {
                                 "Ref": "placeholderjobapi33E0C5D1"
                             },
@@ -1337,7 +1337,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": {
                     "Fn::GetAtt": [
-                        "placeholderApiConfigLambda73DE0091",
+                        "placeholderApiHandlerLambda10057CF7",
                         "Arn"
                     ]
                 },
@@ -1350,7 +1350,7 @@
                             {
                                 "Ref": "AWS::Partition"
                             },
-                            ":execute-api:eu-west-1:123456789876:",
+                            ":execute-api:eu-west-1:123xxxxx9876:",
                             {
                                 "Ref": "placeholderjobapi33E0C5D1"
                             },
@@ -1475,7 +1475,7 @@
                             {
                                 "Ref": "AWS::Partition"
                             },
-                            ":execute-api:eu-west-1:123456789876:",
+                            ":execute-api:eu-west-1:123xxxxx9876:",
                             {
                                 "Ref": "placeholderjobapi33E0C5D1"
                             },
@@ -1504,7 +1504,7 @@
                             {
                                 "Ref": "AWS::Partition"
                             },
-                            ":execute-api:eu-west-1:123456789876:",
+                            ":execute-api:eu-west-1:123xxxxx9876:",
                             {
                                 "Ref": "placeholderjobapi33E0C5D1"
                             },
