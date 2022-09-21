@@ -93,7 +93,7 @@ def main():
                 except Exception as e:
                     cyc_root_log.error('## FAILED TO SEND HEARTBEAT TO SF: ' + str(e) + ' -- ' + datetime.now().isoformat())
                     break
-
+                
                 try:
                     # Get metric data on cpu and mem usage
                     mem_data = psutil.virtual_memory()._asdict()
@@ -135,7 +135,7 @@ def main():
         try:
             proc = subprocess.Popen([cmd],
                                     stdout = subprocess.PIPE,
-                                    stderr = subprocess.PIPE,
+                                    stderr = subprocess.STDOUT,
                                     universal_newlines = True,
                                     shell = True
                                     )
@@ -143,7 +143,7 @@ def main():
             result = ''
             old_time = time.perf_counter()
             for line in iter(proc.stdout.readline, ''):
-                print(line)
+                print(line[:-1])
                 buffer.append(line[:-1])
                 result = result + line[:-1] + '\n'
 
@@ -152,7 +152,6 @@ def main():
 
                     buffer = []
                     old_time = time.perf_counter()
-        
             if len(buffer) > 0:
                 callback(stack_name, JobName, jobDefinition, JobQueue, buffer)
             while proc.poll() is None:
