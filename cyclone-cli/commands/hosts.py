@@ -226,7 +226,7 @@ def create_host(ctx, name, account, region, enable_dashboard, vpc, auto_init_mai
         current_subnet = 'placeholder_subnet'
         current_api_key = 'placeholder_api_key'
         
-        base_temp = 'template copy.json'
+        base_temp = 'template.json'
         repo = name + '-deploy'
 
         j = get_config(base_temp)
