@@ -243,9 +243,7 @@ images['images'] = []
 with open("./hyper_batch/configuration/images.json", 'w') as outfile:
         json.dump(images, outfile)
 
-
-for i in range(0,29,1):
-    ####################regions
+def scan_regions():
     dynamo_regions = dynamo.scan(
         TableName=stack_name + '_regions_table',
     )
@@ -282,7 +280,201 @@ for i in range(0,29,1):
 
     with open("./hyper_batch/configuration/regions.json", 'w') as outfile:
         json.dump(regions, outfile)
+    
+    return dynamo_regions, regions
 
+def scan_clusters():
+    dynamo_clusters = dynamo.scan(
+        TableName=stack_name + '_clusters_table',
+    )
+
+    dynamo_clusters = dynamo_clusters['Items']
+
+    logger.info('## CHECK CLUSTERS : ' + jsonpickle.encode(dynamo_clusters))
+
+    clusters = {}
+    clusters['clusters'] = []
+    failed = []
+    count = 0
+    for item in dynamo_clusters:
+        try:
+            local_item = clean_item(item)
+            local_item['clusterName'] = local_item['name']
+            clusters['clusters'].append(local_item)
+        except Exception as e:
+            logger.error('## FAILED TO PARSE DATA: ' + jsonpickle.encode(e, item))
+            update1 = dynamo.update_item(
+                TableName=stack_name + '_clusters_table',
+                Key={'name': {'S': item['name']['S']}},
+                UpdateExpression="set #attr1 = :p, #attr2 = :r",
+                ExpressionAttributeNames={'#attr1': 'Status', '#attr2': 'Output_Log'},
+                ExpressionAttributeValues={':p': {'S': 'FAILED'}, ':r': {'S': str('FAILED ' + str(e))}},
+                ReturnValues="UPDATED_NEW"
+                )
+            failed.append(count)
+            pass
+        count =+ 1
+    
+    for item in failed:
+        dynamo_clusters.pop(item)
+
+    with open("./hyper_batch/configuration/clusters.json", 'w') as outfile:
+        json.dump(clusters, outfile)
+
+    return dynamo_clusters, clusters
+
+def scan_definitions():
+    dynamo_jobDefinitions = dynamo.scan(
+        TableName=stack_name + '_jobDefinitions_table',
+    )
+
+    dynamo_jobDefinitions = dynamo_jobDefinitions['Items']
+
+    logger.info('## CHECK JOB DEFINITIONS : ' + jsonpickle.encode(dynamo_jobDefinitions))
+    
+    jobDefinitions = {}
+    jobDefinitions['jobDefinitions'] = []
+    failed =[]
+    count = 0
+    for raw_item in dynamo_jobDefinitions:
+        try:
+            item = clean_item(raw_item)
+
+            remove = []
+            for k,v in item.items():
+                if k == 'privileged':
+                    if v == 'False' or v == 'false':
+                        item[k] = False
+                    if v == 'True' or v == 'true':
+                        item[k] = True
+                if k == 'JOBStoWORKERSratio':
+                    item[k] = int(v)
+                    continue
+                try:
+                    item[k] = float(v)
+                except Exception:
+                    pass
+            
+            local_item = item
+            local_item['jobDefinitionName'] = item.get('name', None)
+            jobDefinitions['jobDefinitions'].append(local_item)
+        except Exception as e:
+            logger.error('## FAILED TO PARSE DATA: ' + jsonpickle.encode(e, raw_item))
+            update1 = dynamo.update_item(
+                TableName=stack_name + '_jobDefinitions_table',
+                Key={'name': {'S': raw_item['name']['S']}},
+                UpdateExpression="set #attr1 = :p, #attr2 = :r",
+                ExpressionAttributeNames={'#attr1': 'Status', '#attr2': 'Output_Log'},
+                ExpressionAttributeValues={':p': {'S': 'FAILED'}, ':r': {'S': str('FAILED ' + str(e))}},
+                ReturnValues="UPDATED_NEW"
+                )
+            failed.append(count)
+            pass
+        count =+ 1
+    
+    for item in failed:
+        dynamo_jobDefinitions.pop(item)
+
+    with open("./hyper_batch/configuration/job_definitions.json", 'w') as outfile:
+        json.dump(jobDefinitions, outfile)
+    
+    return dynamo_jobDefinitions, jobDefinitions
+
+def scan_queues():
+    dynamo_queues = dynamo.scan(
+        TableName=stack_name + '_queues_table',
+    )
+
+    dynamo_queues = dynamo_queues['Items']
+
+    logger.info('## CHECK QUEUES : ' + jsonpickle.encode(dynamo_queues))
+
+    queues = {}
+    queues['queues'] = []
+    failed = []
+    count = 0
+    for item in dynamo_queues:
+        try:
+            local_item = clean_item(item)
+            local_item['queue_name'] = local_item['name']
+            queues['queues'].append(local_item)
+        except Exception as e:
+            logger.error('## FAILED TO PARSE DATA: ' + jsonpickle.encode(e, item))
+            update1 = dynamo.update_item(
+                TableName=stack_name + '_queues_table',
+                Key={'name': {'S': item['name']['S']}},
+                UpdateExpression="set #attr1 = :p, #attr2 = :r",
+                ExpressionAttributeNames={'#attr1': 'Status', '#attr2': 'Output_Log'},
+                ExpressionAttributeValues={':p': {'S': 'FAILED'}, ':r': {'S': str('FAILED ' + str(e))}},
+                ReturnValues="UPDATED_NEW"
+                )
+            failed.append(count)
+            pass
+        count =+ 1
+    
+    for item in failed:
+        dynamo_queues.pop(item)
+
+    with open("./hyper_batch/configuration/queues.json", 'w') as outfile:
+        json.dump(queues, outfile)
+    
+    return dynamo_queues, queues
+
+def scan_images():
+
+    result, status = do_work(['aws s3 sync s3://{}-images-{}/images ./hyper_batch/configuration/images'.format(stack_name, region)])
+
+    dynamo_images = dynamo.scan(
+        TableName=stack_name + '_images_table',
+    )
+
+    dynamo_images = dynamo_images['Items']
+
+    logger.info('## CHECK IMAGES : ' + jsonpickle.encode(dynamo_images))
+    
+    images = {}
+    images['images'] = []
+    failed =[]
+    count = 0
+    for raw_item in dynamo_images:
+        try:
+            local_item = clean_item(raw_item)
+            local_item['imageName'] = local_item['name']
+            local_item['directory'] = 'hyper_batch/configuration/images/{}'.format(local_item.get('name', None))
+            images['images'].append(local_item)
+        except Exception as e:
+            logger.error('## FAILED TO PARSE DATA: ' + jsonpickle.encode(e, raw_item))
+            update1 = dynamo.update_item(
+                TableName=stack_name + '_images_table',
+                Key={'name': {'S': raw_item['name']['S']}},
+                UpdateExpression="set #attr1 = :p, #attr2 = :r",
+                ExpressionAttributeNames={'#attr1': 'Status', '#attr2': 'Output_Log'},
+                ExpressionAttributeValues={':p': {'S': 'FAILED'}, ':r': {'S': str('FAILED ' + str(e))}},
+                ReturnValues="UPDATED_NEW"
+                )
+            failed.append(count)
+            pass
+        count =+ 1
+    
+    for item in failed:
+        dynamo_images.pop(item)
+
+    with open("./hyper_batch/configuration/images.json", 'w') as outfile:
+        json.dump(images, outfile)
+    
+    return dynamo_images, images
+
+
+for i in range(0,29,1):
+
+    ####################################### SCAN ALL CONFIGURATIONS AND UPDATE LOCAL CONFIG TABLES
+    dynamo_regions, regions = scan_regions()
+    dynamo_clusters, clusters = scan_clusters()
+    dynamo_queues, queues = scan_queues()
+    dynamo_jobDefinitions, jobDefinitions = scan_definitions()
+    dynamo_images, images = scan_images()
+
+    ####################regions deploy
     for item in dynamo_regions:
 
         if item['Status']['S'] == 'Creating':
@@ -335,45 +527,7 @@ for i in range(0,29,1):
                     )
     print('REGIONS UPDATED')
 
-    ####################clusters
-    dynamo_clusters = dynamo.scan(
-        TableName=stack_name + '_clusters_table',
-    )
-
-    dynamo_clusters = dynamo_clusters['Items']
-
-    logger.info('## CHECK CLUSTERS : ' + jsonpickle.encode(dynamo_clusters))
-
-    clusters = {}
-    clusters['clusters'] = []
-    failed = []
-    count = 0
-    for item in dynamo_clusters:
-        try:
-            local_item = clean_item(item)
-            local_item['clusterName'] = local_item['name']
-            clusters['clusters'].append(local_item)
-        except Exception as e:
-            logger.error('## FAILED TO PARSE DATA: ' + jsonpickle.encode(e, item))
-            update1 = dynamo.update_item(
-                TableName=stack_name + '_clusters_table',
-                Key={'name': {'S': item['name']['S']}},
-                UpdateExpression="set #attr1 = :p, #attr2 = :r",
-                ExpressionAttributeNames={'#attr1': 'Status', '#attr2': 'Output_Log'},
-                ExpressionAttributeValues={':p': {'S': 'FAILED'}, ':r': {'S': str('FAILED ' + str(e))}},
-                ReturnValues="UPDATED_NEW"
-                )
-            failed.append(count)
-            pass
-        count =+ 1
-    
-    for item in failed:
-        dynamo_clusters.pop(item)
-
-
-    with open("./hyper_batch/configuration/clusters.json", 'w') as outfile:
-        json.dump(clusters, outfile)
-
+    ####################clusters deploy
     for item in dynamo_clusters:
         
         if item['Status']['S'] == 'Creating' or item['Status']['S'] == 'Updating':
@@ -428,44 +582,7 @@ for i in range(0,29,1):
     print('CLUSTERS UPDATED')
 
 
-####################queues
-    dynamo_queues = dynamo.scan(
-        TableName=stack_name + '_queues_table',
-    )
-
-    dynamo_queues = dynamo_queues['Items']
-
-    logger.info('## CHECK QUEUES : ' + jsonpickle.encode(dynamo_queues))
-
-    queues = {}
-    queues['queues'] = []
-    failed = []
-    count = 0
-    for item in dynamo_queues:
-        try:
-            local_item = clean_item(item)
-            local_item['queue_name'] = local_item['name']
-            queues['queues'].append(local_item)
-        except Exception as e:
-            logger.error('## FAILED TO PARSE DATA: ' + jsonpickle.encode(e, item))
-            update1 = dynamo.update_item(
-                TableName=stack_name + '_queues_table',
-                Key={'name': {'S': item['name']['S']}},
-                UpdateExpression="set #attr1 = :p, #attr2 = :r",
-                ExpressionAttributeNames={'#attr1': 'Status', '#attr2': 'Output_Log'},
-                ExpressionAttributeValues={':p': {'S': 'FAILED'}, ':r': {'S': str('FAILED ' + str(e))}},
-                ReturnValues="UPDATED_NEW"
-                )
-            failed.append(count)
-            pass
-        count =+ 1
-    
-    for item in failed:
-        dynamo_queues.pop(item)
-
-    with open("./hyper_batch/configuration/queues.json", 'w') as outfile:
-        json.dump(queues, outfile)
-
+####################queues deploy
     for item in dynamo_queues:
         
         if item['Status']['S'] == 'Creating' or item['Status']['S'] == 'Updating':
@@ -518,62 +635,7 @@ for i in range(0,29,1):
 
     print('QUEUES UPDATED')
 
-
-    ####################jobDefinitions
-    dynamo_jobDefinitions = dynamo.scan(
-        TableName=stack_name + '_jobDefinitions_table',
-    )
-
-    dynamo_jobDefinitions = dynamo_jobDefinitions['Items']
-
-    logger.info('## CHECK JOB DEFINITIONS : ' + jsonpickle.encode(dynamo_jobDefinitions))
-    
-    jobDefinitions = {}
-    jobDefinitions['jobDefinitions'] = []
-    failed =[]
-    count = 0
-    for raw_item in dynamo_jobDefinitions:
-        try:
-            item = clean_item(raw_item)
-
-            remove = []
-            for k,v in item.items():
-                if k == 'privileged':
-                    if v == 'False' or v == 'false':
-                        item[k] = False
-                    if v == 'True' or v == 'true':
-                        item[k] = True
-                if k == 'JOBStoWORKERSratio':
-                    item[k] = int(v)
-                    continue
-                try:
-                    item[k] = float(v)
-                except Exception:
-                    pass
-            
-            local_item = item
-            local_item['jobDefinitionName'] = item.get('name', None)
-            jobDefinitions['jobDefinitions'].append(local_item)
-        except Exception as e:
-            logger.error('## FAILED TO PARSE DATA: ' + jsonpickle.encode(e, raw_item))
-            update1 = dynamo.update_item(
-                TableName=stack_name + '_jobDefinitions_table',
-                Key={'name': {'S': raw_item['name']['S']}},
-                UpdateExpression="set #attr1 = :p, #attr2 = :r",
-                ExpressionAttributeNames={'#attr1': 'Status', '#attr2': 'Output_Log'},
-                ExpressionAttributeValues={':p': {'S': 'FAILED'}, ':r': {'S': str('FAILED ' + str(e))}},
-                ReturnValues="UPDATED_NEW"
-                )
-            failed.append(count)
-            pass
-        count =+ 1
-    
-    for item in failed:
-        dynamo_jobDefinitions.pop(item)
-
-    with open("./hyper_batch/configuration/job_definitions.json", 'w') as outfile:
-        json.dump(jobDefinitions, outfile)
-
+    ####################jobDefinitions deploy
     for item in dynamo_jobDefinitions:
         
         if item['Status']['S'] == 'Creating' or item['Status']['S'] == 'Updating':
@@ -626,48 +688,7 @@ for i in range(0,29,1):
 
     print('JOB DEFINITIONS UPDATED')
 
-        ####################images
-
-    result, status = do_work(['aws s3 sync s3://{}-images-{}/images ./hyper_batch/configuration/images'.format(stack_name, region)])
-
-    dynamo_images = dynamo.scan(
-        TableName=stack_name + '_images_table',
-    )
-
-    dynamo_images = dynamo_images['Items']
-
-    logger.info('## CHECK IMAGES : ' + jsonpickle.encode(dynamo_images))
-    
-    images = {}
-    images['images'] = []
-    failed =[]
-    count = 0
-    for raw_item in dynamo_images:
-        try:
-            local_item = clean_item(raw_item)
-            local_item['imageName'] = local_item['name']
-            local_item['directory'] = 'hyper_batch/configuration/images/{}'.format(local_item.get('name', None))
-            images['images'].append(local_item)
-        except Exception as e:
-            logger.error('## FAILED TO PARSE DATA: ' + jsonpickle.encode(e, raw_item))
-            update1 = dynamo.update_item(
-                TableName=stack_name + '_images_table',
-                Key={'name': {'S': raw_item['name']['S']}},
-                UpdateExpression="set #attr1 = :p, #attr2 = :r",
-                ExpressionAttributeNames={'#attr1': 'Status', '#attr2': 'Output_Log'},
-                ExpressionAttributeValues={':p': {'S': 'FAILED'}, ':r': {'S': str('FAILED ' + str(e))}},
-                ReturnValues="UPDATED_NEW"
-                )
-            failed.append(count)
-            pass
-        count =+ 1
-    
-    for item in failed:
-        dynamo_images.pop(item)
-
-    with open("./hyper_batch/configuration/images.json", 'w') as outfile:
-        json.dump(images, outfile)
-
+    ####################images deploy
     for item in dynamo_images:
         
         if item['Status']['S'] == 'Creating' or item['Status']['S'] == 'Updating':
