@@ -20,7 +20,14 @@ from subprocess import Popen, PIPE
 from subprocess import check_output
 import json
 import requests
+import boto3
 
+def get_account():
+    try:
+        account = boto3.client('sts').get_caller_identity().get('Account')
+        return account
+    except Exception:
+        return 'no aws creds found'
 
 def get(url, key, table, name):
     message = json.dumps(
@@ -176,3 +183,42 @@ def delete_image(obj, name):
         click.echo(key)
         click.echo(image[key])
     click.echo('')
+
+@images.command()
+@click.pass_obj
+@click.option('--name', required=True, prompt='Name of image to replace', help='Name of image to replace')
+@click.option('--local-docker-image', required=True, prompt='Local docker image repository and tag e.g repository:tag', help='Local docker image repository and tag e.g repository:tag')
+@click.option('--account', required=True, default=get_account(), prompt='Account in use', help='AWS account in use, e.g. 123xxxx456')
+def replace_with_local_image(obj, name, local_docker_image, account):
+    """IMPORTANT: You can push a local docker image to replace an existing image built with add-image command. If you do not want to build your image in cloud create a placeholder image and then use this to replace that image with your local version. This ensures images are replicated across regions and correctly associated with job definitions"""
+    click.echo('')
+    res = subprocess.run('docker info', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    if not res.returncode == 0:
+        click.echo('Docker agent not running, EXITING deployment')
+        return 'Docker agent not running, EXITING deployment'
+
+    results = scan(obj.url, obj.key, obj.name +'_images_table')
+    found = False
+    for image in results:
+        if image['name'] == name and image['Status'] == 'ACTIVE':
+            click.echo('Found Image: ' + name)
+            found = True
+            break
+    if not found:
+        click.echo('Could not find existing cyclone image in ACTIVE state with name: ' + name)
+        return
+
+    results = scan(obj.url, obj.key, obj.name +'_regions_table')
+
+    for region in results:
+        if region['Status'] == 'ACTIVE':
+            click.echo('')
+            click.echo('Pushing image to ' + region['name'])
+            command = 'bash update_ecr_image.sh {} {} {} {} {}'.format(account, region['name'], obj.name, name, local_docker_image)
+            click.echo(command)
+            output, status = do_work([command])
+            if status == 'FAILED':
+                click.echo('FAILED to push image to ecr in this region' + region['name'])
+                return
+        
+    click.echo(f'UPDATE FINISHED!')
