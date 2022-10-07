@@ -47,7 +47,7 @@ cluster_config = get_config("./hyper_batch/configuration/clusters.json")
 cluster_config = cluster_config['clusters']
 class Clusters(core.Stack):
 
-    def __init__(self, scope: core.Construct, id: str, *, stack_name: str=None, main_region: str=None, is_main_region: str=None, import_vpc: str=None, cidr: str=None, vpc_id: str=None, peer_with_main_region: str=None, deploy_vpc_endpoints: str=None, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str, *, stack_name: str=None, main_region: str=None, is_main_region: str=None, import_vpc: str=None, cidr: str=None, vpc_id: str=None, peer_with_main_region: str=None, deploy_vpc_endpoints: str=None, subnet_config: str=None, nat_gateways: int=None, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         #create all iam roles here in main region and import them to other stacks to manage destroying stacks without failing dependendencies and creation of stacks not failing due to missing role for import
@@ -145,7 +145,13 @@ class Clusters(core.Stack):
   
         #create vpc or import existing
         if import_vpc == 'False':
-            vpc = ec2.Vpc(self, id='hyper_batch_vpc', cidr=cidr)
+            if subnet_config == 'PRIVATE_ISOLATED':
+                vpc = ec2.Vpc(self, id='hyper_batch_vpc', cidr=cidr, subnet_configuration=[ec2.SubnetConfiguration(name=str(stack_name + '_private_subnet'), subnet_type=ec2.SubnetType.ISOLATED)])
+            elif subnet_config == 'PUBLIC':
+                vpc = ec2.Vpc(self, id='hyper_batch_vpc', cidr=cidr, subnet_configuration=[ec2.SubnetConfiguration(name=stack_name + '_public_subnet', subnet_type=ec2.SubnetType.PUBLIC)])
+            else:
+                print(nat_gateways)
+                vpc = ec2.Vpc(self, id='hyper_batch_vpc', cidr=cidr, nat_gateways=nat_gateways)
         else:
             vpc = ec2.Vpc.from_lookup(self, id='hyper_batch_vpc', vpc_id=vpc_id)   
         
@@ -169,6 +175,7 @@ class Clusters(core.Stack):
             kinesis_endpoint = ec2.InterfaceVpcEndpoint(self, str(stack_name + 'kinesis-endpoint'), vpc=vpc, private_dns_enabled=True, service=ec2.InterfaceVpcEndpointService(f'com.amazonaws.{self.region}.kinesis-streams', port=443))
             sf_states_endpoint = ec2.InterfaceVpcEndpoint(self, str(stack_name + 'sf-states'), vpc=vpc, private_dns_enabled=True, service=ec2.InterfaceVpcEndpointService(f'com.amazonaws.{self.region}.states', port=443))
             sf_sync_states_endpoint = ec2.InterfaceVpcEndpoint(self, str(stack_name + 'sf-sync-states'), vpc=vpc, private_dns_enabled=True, service=ec2.InterfaceVpcEndpointService(f'com.amazonaws.{self.region}.sync-states', port=443))
+            logs_endpoint = ec2.InterfaceVpcEndpoint(self, str(stack_name + 'logs'), vpc=vpc, private_dns_enabled=True, service=ec2.InterfaceVpcEndpointService(f'com.amazonaws.{self.region}.logs', port=443))
 
         lambda_layer = self.create_dependencies_layer(stack_name, "layers-clusters")
 
@@ -253,7 +260,7 @@ class Clusters(core.Stack):
                 role=vpc_peering_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
-                tracing=_lambda.Tracing.ACTIVE,
+                tracing=_lambda.Tracing.DISABLED,
             )
             vpc_peering_lambda.add_environment("MAIN_REGION", main_region)
             vpc_peering_lambda.add_environment("MAIN_VPC_ID", main_vpc_id)
@@ -278,7 +285,7 @@ class Clusters(core.Stack):
             auto_delete_objects=True,
             encryption= s3.BucketEncryption.S3_MANAGED,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
-            server_access_logs_prefix='access-logs',
+        #    server_access_logs_prefix='access-logs',
             enforce_ssl=True
             )
 
@@ -309,7 +316,7 @@ class Clusters(core.Stack):
                 role=kinesis_batch_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
-                tracing=_lambda.Tracing.ACTIVE,
+                tracing=_lambda.Tracing.DISABLED,
             )
 
             kinesis_batch_lambda.add_environment("REGION", self.region)

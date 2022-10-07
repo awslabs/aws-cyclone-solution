@@ -93,13 +93,13 @@ def list_clusters(obj, name):
 @clusters.command()
 @click.pass_obj
 @click.option('--name', required=True, prompt='Cluster name', help='Give cluster a name')
-@click.option('--instance-list', required=True, default=["optimal"], show_default=True, prompt='Instance types as list of strings e.g ["m5.large","c5.large"] ', help='Instance types to use as a string list e.g ["m5.large","c5.large"], default is ["optimal"]')
+@click.option('--instance-list', required=True, default=["optimal"], prompt='Instance types as list of strings e.g ["m5.large","c5.large"], default ["optimal"]', help='Instance types to use as a string list e.g ["m5.large","c5.large"], default is ["optimal"]')
 @click.option('--max-vCPUs', required=True, default='1000', show_default=True, prompt='Max vCPUs per region', help='Specify the maximum vCPUs per region, total max vCPUs will be regions enabled * max-vCPUs per region')
 @click.option('--type', required=True, default='SPOT', show_default=True, prompt='Choose [SPOT/ONDEMAND]', type=click.Choice(['SPOT','ONDEMAND'], case_sensitive=False),  help='Choose EC2 pricing plan [SPOT/ONDEMAND]')
 @click.option('--bid-percentage', required=False, default=None, help='For SPOT only - Bid percentage of on-demand cost')
 @click.option('--allocation-strategy', required=False, default=None, type=click.Choice(['SPOT_CAPACITY_OPTIMIZED','BEST_FIT_PROGRESSIVE', 'BEST_FIT'], case_sensitive=False), help='Batch allocation strategy to use [BEST_FIT_PROGRESSIVE/BEST_FIT/SPOT_CAPACITY_OPTIMIZED')
 @click.option('--iam-policies', required=False, default=[], prompt='OPTIONAL Add IAM policies to instance role as list of strings e.g ["custom_policy"]', help='Add additional IAM policies to instance role in your cluster (policies needed by hyper batch are automatically added)')
-@click.option('--main-region-image-name', required=False, default='', prompt='OPTIONAL Specify image name that exists in your main region to use for cluster', help='OPTIONAL Specify Image name for an image that exists in your main region that you want to use for cluster. Cyclone will copy the image to any hub regions where it does not exist and use local versions')
+@click.option('--main-region-image-name', required=False, default='', prompt='OPTIONAL Specify custom AMI name that exists in your main region to use for cluster', help='OPTIONAL Specify custom AMI name for an image that exists in your main region that you want to use for cluster. Cyclone will copy the image to any hub regions where it does not exist and use local versions')
 def add_cluster(obj, name, instance_list, max_vcpus, type, bid_percentage, allocation_strategy, iam_policies, main_region_image_name):
     """Add a cluster to your environment, clusters will span all enabled regions."""
     instance_list = str(instance_list).replace("'", '"')

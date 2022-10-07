@@ -88,10 +88,46 @@ def get_vpcs(ctx, param, value):
 @click.option('--cidr', required=False, default=None, help='If import-vpc is False specify cidr to create e.g 10.0.0.0/16')
 @click.option('--vpc-id', required=False, default=None, help='If import-vpc is True then specify the vpc-id to import')
 @click.option('--deploy-vpc-endpoints', required=False, type=click.Choice(['OFF', 'DATA_OPTIMISED','FOR_PRIVATE_VPC'], case_sensitive=False), help='Deploy VPC endpoints either for data transfer cost optimisation only (use DATA_OPTIMISED) or to use private subnets(use FOR_PRIVATE_VPC')
-def init_main_region(obj, import_vpc, cidr, vpc_id, deploy_vpc_endpoints):
+@click.option('--subnet-config', required=False, type=click.Choice(['PUBLIC', 'PRIVATE_ISOLATED','PRIVATE_WITH_NAT'], case_sensitive=False), help='Please choose what internet access to give subnets in your VPC')
+@click.option('--nat-gateways', required=False, help='How many nat gateways in your vpc (if creating vpc rather than importing)')
+def init_main_region(obj, import_vpc, cidr, vpc_id, deploy_vpc_endpoints, subnet_config, nat_gateways):
     """START HERE - Initialize the main region for a newly created host. This is required before you can start configuring other regions, clusters, queues etc. for the host. Default parameters will match the host parameters or optionally change them"""
     if import_vpc == None:
-        click.confirm('Are you sure you want to use same vpc as host? (if not see init-main-region --help)', abort=True)
+        use_same = click.confirm('Do you want to use the same vpc as host for your main region', abort=False, default=True)
+        if not use_same:
+            ec2 = boto3.client('ec2', region_name=obj.region)
+            vpcs = ec2.describe_vpcs()
+            click.echo('')
+            click.echo('EXISTING VPCS IN THIS REGION')
+            for vpc in vpcs['Vpcs']:
+                click.echo('----------------------------')
+                click.echo(vpc['VpcId'])
+                click.echo(vpc['CidrBlock'])
+                click.echo('Default: ' + str(vpc['IsDefault']))
+            click.echo('----------------------------')
+            click.echo('')
+            vpc = click.prompt('If creating vpc specify cidr range to use or specify a vpc-id to import existing vpc (recommended) e.g 10.0.0.0/16 OR vpc-xxxx')
+            if 'vpc-' in vpc:
+                import_vpc = 'True'
+                vpc_id = vpc
+                cidr='null'
+                ec2 = boto3.client('ec2', region_name=obj.region)
+                vpcs = ec2.describe_vpcs()
+                if not vpc in str(vpcs):
+                    click.echo('VpcId not found in this region')
+                    return 'VpcId not found in this region'
+            else:
+                subnet_config = click.prompt('Please choose what internet access to give subnets', type=click.Choice(['PUBLIC', 'PRIVATE_ISOLATED','PRIVATE_WITH_NAT'], case_sensitive=False), default='PRIVATE_WITH_NAT')
+                if subnet_config == 'PRIVATE_WITH_NAT':
+                    nat_gateways = click.prompt('Please choose how many NAT Gateways to deploy', default=2)
+                import_vpc = 'False'
+                vpc_id = 'null'
+                cidr = vpc
+                ec2 = boto3.client('ec2', region_name=obj.region)
+                vpcs = ec2.describe_vpcs()
+                if vpc in str(vpcs):
+                    click.echo('CIDR already exists in this region, choose another CIDR')
+                    return 'CIDR already exists in this region, choose another CIDR'
     if deploy_vpc_endpoints == None:
         deploy_vpc_endpoints = click.prompt('Choose VPC endpoint group to deploy', type=click.Choice(['OFF', 'DATA_OPTIMISED','FOR_PRIVATE_VPC'], case_sensitive=False), default='OFF')
 
@@ -103,6 +139,8 @@ def init_main_region(obj, import_vpc, cidr, vpc_id, deploy_vpc_endpoints):
         "vpc_id": vpc_id or obj.vpc_id,
         "peer_with_main_region": 'False',
         "deploy_vpc_endpoints": deploy_vpc_endpoints,
+        "subnet_config": subnet_config,
+        "nat_gateways": nat_gateways,
         "Status": "Creating",
         "Output_Log": ''
     }
@@ -157,7 +195,9 @@ def list_regions(obj, name):
 @click.option('--vpc', required=True, default='', prompt='If creating vpc specify cidr range to use or specify a vpc-id to import existing vpc (recommended) e.g 10.0.0.0/16 OR vpc-xxxx', help='Import or create a vpc to use by specifying either a cidr or vpc-id (e.g 10.0.0.0/16 OR vpc-xxxx)')
 @click.option('--peer-with-main-region', required=True, type=click.Choice(['True','False'], case_sensitive=False), default='False', prompt='[True/False] Peering between hub region private subnets and main region private subnets', help='If set to True a peering connection is automatically create between hub region vpc and main region vpc for network communication. The main region vpc will need private subnets available for this to work.')
 @click.option('--deploy-vpc-endpoints', required=True, type=click.Choice(['OFF', 'DATA_OPTIMISED','FOR_PRIVATE_VPC'], case_sensitive=False), default='OFF', prompt='OPTIONAL Choose VPC endpoint group to deploy', help='Deploy VPC endpoints either for data transfer cost optimisation only (use DATA_OPTIMISED) or to use private subnets(use FOR_PRIVATE_VPC')
-def add_region(obj, name, vpc, peer_with_main_region, deploy_vpc_endpoints):
+@click.option('--subnet-config', required=False, type=click.Choice(['PUBLIC', 'PRIVATE_ISOLATED','PRIVATE_WITH_NAT'], case_sensitive=False), help='Please choose what internet access to give subnets in your VPC')
+@click.option('--nat-gateways', required=False, help='How many nat gateways in your vpc (if creating vpc rather than importing)')
+def add_region(obj, name, vpc, peer_with_main_region, deploy_vpc_endpoints, subnet_config, nat_gateways):
     """Add a hub region to your environment to increase scheduling performance and available capacity. Clusters will automatically extend across all enabled regions and by selecting peer to main region "True' you can ensure connectivity to NFS/SMB storage and license servers."""
     if 'vpc-' in vpc:
         import_vpc = 'True'
@@ -169,6 +209,9 @@ def add_region(obj, name, vpc, peer_with_main_region, deploy_vpc_endpoints):
             click.echo('VpcId not found in this region')
             return 'VpcId not found in this region'
     else:
+        subnet_config = click.prompt('Please choose what internet access to give subnets', type=click.Choice(['PUBLIC', 'PRIVATE_ISOLATED','PRIVATE_WITH_NAT'], case_sensitive=False), default='PRIVATE_WITH_NAT')
+        if subnet_config == 'PRIVATE_WITH_NAT':
+            nat_gateways = click.prompt('Please choose how many NAT Gateways to deploy', default=2)
         import_vpc = 'False'
         vpc_id = 'null'
         cidr = vpc
@@ -186,6 +229,8 @@ def add_region(obj, name, vpc, peer_with_main_region, deploy_vpc_endpoints):
         "vpc_id": vpc_id,
         "peer_with_main_region": peer_with_main_region,
         "deploy_vpc_endpoints": deploy_vpc_endpoints,
+        "subnet_config": subnet_config,
+        "nat_gateways": nat_gateways,
         "Status": "Creating",
         "Output_Log": ''
     }
@@ -208,22 +253,19 @@ def add_region(obj, name, vpc, peer_with_main_region, deploy_vpc_endpoints):
 @regions.command()
 @click.pass_obj
 @click.option('--name', required=True, help='AWS region to update, e.g. eu-west-1')
-@click.option('--import-vpc', required=False, help='[True/False] if you want to import a vpc specify --vpc-id <id> otherwise --cidr <cidr> and one is created for you.')
-@click.option('--cidr', required=False, help='If import-vpc is False specify cidr to create e.g 10.0.0.0/16')
-@click.option('--vpc-id', required=False, help='If import-vpc is True then specify the vpc-id to import')
 @click.option('--peer-with-main-region', required=False, help='If set to True a peering connection is automatically create between hub region vpc and main region vpc for network communication')
 @click.option('--deploy-vpc-endpoints', required=False, type=click.Choice(['OFF', 'DATA_OPTIMISED','FOR_PRIVATE_VPC'], case_sensitive=False), help='Deploy VPC endpoints either for data transfer cost optimisation only (use DATA_OPTIMISED) or to use private subnets(use FOR_PRIVATE_VPC')
-def update_region(obj, name, import_vpc, cidr, vpc_id, peer_with_main_region, deploy_vpc_endpoints):
+@click.option('--subnet-config', required=False, type=click.Choice(['PUBLIC', 'PRIVATE_ISOLATED','PRIVATE_WITH_NAT'], case_sensitive=False), help='Please choose what internet access to give subnets in your VPC')
+@click.option('--nat-gateways', required=False, help='How many nat gateways in your vpc (if creating vpc rather than importing)')
+def update_region(obj, name, peer_with_main_region, deploy_vpc_endpoints, subnet_config, nat_gateways):
     """Update specific configurations for an existing hub region"""
     
     params_old = get(obj.url, obj.key, obj.name +'_regions_table', name)
     
-    if not import_vpc == None:
-        params_old['import_vpc'] =import_vpc
-    if not cidr == None:
-        params_old['cidr'] = cidr
-    if not vpc_id == None:
-        params_old['vpc_id'] = vpc_id
+    if not subnet_config == None:
+        params_old['subnet_config'] =subnet_config
+    if not nat_gateways == None:
+        params_old['nat_gateways'] = nat_gateways
     if not peer_with_main_region == None:
         params_old['peer_with_main_region'] = peer_with_main_region
     if not deploy_vpc_endpoints == None:

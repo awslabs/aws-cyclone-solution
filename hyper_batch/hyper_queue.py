@@ -221,7 +221,7 @@ class Queues(core.Stack):
                 role=api_handler_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
-                tracing=_lambda.Tracing.ACTIVE
+                tracing=_lambda.Tracing.DISABLED
             )
 
             api_config_lambda = _lambda.Function(self, str(stack_name +'ApiConfigLambda'),
@@ -231,7 +231,7 @@ class Queues(core.Stack):
                 role=api_handler_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
-                tracing=_lambda.Tracing.ACTIVE
+                tracing=_lambda.Tracing.DISABLED
             )
             api_config_lambda.add_environment("STACK_NAME", stack_name)
 
@@ -348,7 +348,7 @@ class Queues(core.Stack):
                 memory_size=1024,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
-                tracing=_lambda.Tracing.ACTIVE
+                tracing=_lambda.Tracing.DISABLED
             )
 
             dynamo_stream_lambda.add_environment("CLUSTER_MAPPING", queue['computeEnvironment'])
@@ -390,7 +390,7 @@ class Queues(core.Stack):
                 memory_size=1024,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
-                tracing=_lambda.Tracing.ACTIVE
+                tracing=_lambda.Tracing.DISABLED
             )
 
             dynamo_to_logs_lambda.add_environment("STACK_NAME", stack_name)
@@ -423,7 +423,7 @@ class Queues(core.Stack):
                     memory_size=1024,
                     timeout=core.Duration.seconds(180),
                     layers=[lambda_layer],
-                    tracing=_lambda.Tracing.ACTIVE
+                    tracing=_lambda.Tracing.DISABLED
                 )
 
                 dynamo_to_es_lambda.add_environment("REGION", self.region)

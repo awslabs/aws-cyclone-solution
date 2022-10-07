@@ -191,7 +191,7 @@ class HyperFrontEnd(core.Stack):
                 role=api_handler_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
-                tracing=_lambda.Tracing.ACTIVE
+                tracing=_lambda.Tracing.DISABLED
             )
 
             api_config_lambda = _lambda.Function(self, str(stack_name +'ApiConfigLambda'),
@@ -201,7 +201,7 @@ class HyperFrontEnd(core.Stack):
                 role=api_handler_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
-                tracing=_lambda.Tracing.ACTIVE
+                tracing=_lambda.Tracing.DISABLED
             )
             api_config_lambda.add_environment("STACK_NAME", stack_name)
 
@@ -210,7 +210,7 @@ class HyperFrontEnd(core.Stack):
                 api_key_source_type=apigateway.ApiKeySourceType.HEADER,
                 deploy_options={
                 "logging_level": apigateway.MethodLoggingLevel.ERROR,
-                "data_trace_enabled": True,
+                "data_trace_enabled": False,
                 "access_log_destination": apigateway.LogGroupLogDestination(logs.LogGroup(self, str(stack_name +'-logs-api'), retention=logs.RetentionDays('TWO_MONTHS'))),
                 "access_log_format": apigateway.AccessLogFormat.json_with_standard_fields(
                         caller=True,

@@ -1,7 +1,8 @@
 {"images": [
             {
                 "imageName": "sample_worker_image",
-                "directory": "example-image-build"
+                "directory": "example-image-build",
+                "build_arguments": null
             }
     ]
 }

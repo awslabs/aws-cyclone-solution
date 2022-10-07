@@ -6,7 +6,9 @@
         "cidr": "101.0.0.0/16", 
         "vpc_id": "vpc-xxxxxx", 
         "peer_with_main_region": "False",
-        "deploy_vpc_endpoints": "DATA_OPTIMISED"
+        "deploy_vpc_endpoints": "DATA_OPTIMISED",
+        "subnet_config": "PRIVATE_WITH_NAT",
+        "nat_gateways": 1.0 
     },
     {
         "region": "us-east-2",
@@ -15,7 +17,20 @@
         "cidr": "102.0.0.0/16",
         "vpc_id": "vpc-xxxxxx",
         "peer_with_main_region": "True",
-        "deploy_vpc_endpoints": "DATA_OPTIMISED"
+        "deploy_vpc_endpoints": "FOR_PRIVATE_VPC",
+        "subnet_config": "PRIVATE_ISOLATED",
+        "nat_gateways": null
+    },
+    {
+        "region": "us-west-2",
+        "main_region": "False",
+        "import_vpc": "False",
+        "cidr": "103.0.0.0/16",
+        "vpc_id": "vpc-xxxxxx",
+        "peer_with_main_region": "False",
+        "deploy_vpc_endpoints": "OFF",
+        "subnet_config": "PUBLIC",
+        "nat_gateways": null
     }
 ]
 }

@@ -58,7 +58,8 @@ class Images(core.Stack):
 
           
             asset = ecr_assets.DockerImageAsset(self, image['imageName'],
-                                                            directory= image['directory']
+                                                            directory= image['directory'],
+                                                            build_args=image.get('build_arguments', None)
                                                 )
             
             ecrdeploy.ECRDeployment(self, str(self.stack_name + image['imageName']),

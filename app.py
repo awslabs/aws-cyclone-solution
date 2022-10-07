@@ -68,7 +68,7 @@ if deployed == 'False':
 ####### cluster stack in main region
 print('Load Clusters for main region '+ main_region['region'])
 cluster_stack_name = stack_name + '-clusters-' + main_region['region']
-main_region_clusters = Clusters(app, cluster_stack_name, env=core.Environment(account= account, region=main_region['region']), stack_name=stack_name, main_region=main_region['region'], is_main_region=main_region['main_region'],  import_vpc=main_region['import_vpc'], cidr=main_region['cidr'], vpc_id=main_region['vpc_id'], deploy_vpc_endpoints=main_region['deploy_vpc_endpoints'])
+main_region_clusters = Clusters(app, cluster_stack_name, env=core.Environment(account= account, region=main_region['region']), stack_name=stack_name, main_region=main_region['region'], is_main_region=main_region['main_region'],  import_vpc=main_region['import_vpc'], cidr=main_region['cidr'], vpc_id=main_region['vpc_id'], deploy_vpc_endpoints=main_region['deploy_vpc_endpoints'], subnet_config=main_region.get('subnet_config', 'PRIVATE_NAT'), nat_gateways=main_region.get('nat_gateways', 2))
 
 ####### core stack in main region
 main_region_backend_stack_name = stack_name + '-core-' + main_region['region']
@@ -110,7 +110,7 @@ for region in all_regions:
         ####### cluster stack in hub region
         print('Load Clusters for hub region '+ region['region'])
         cluster_stack_name = stack_name + '-clusters-' + region['region']
-        Clusters(app, cluster_stack_name, env=core.Environment(account=account, region=region['region']), stack_name=stack_name, main_region=main_region['region'], is_main_region=region['main_region'],  import_vpc=region['import_vpc'], cidr=region['cidr'], vpc_id=region['vpc_id'], peer_with_main_region=region['peer_with_main_region'], deploy_vpc_endpoints=region['deploy_vpc_endpoints']).add_dependency(main_region_clusters)
+        Clusters(app, cluster_stack_name, env=core.Environment(account=account, region=region['region']), stack_name=stack_name, main_region=main_region['region'], is_main_region=region['main_region'],  import_vpc=region['import_vpc'], cidr=region['cidr'], vpc_id=region['vpc_id'], peer_with_main_region=region['peer_with_main_region'], deploy_vpc_endpoints=region['deploy_vpc_endpoints'], subnet_config=region.get('subnet_config', 'PRIVATE_WITH_NAT'), nat_gateways=region.get('nat_gateways', 2)).add_dependency(main_region_clusters)
 
         ####### task definition stack in hub region
         print('Load Task Definitions for hub region '+ region['region'])

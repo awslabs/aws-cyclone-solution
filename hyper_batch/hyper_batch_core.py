@@ -90,9 +90,9 @@ class HyperBatchCore(core.Stack):
             handler="log-stream-lambda.lambda_handler",
             code=_lambda.Code.asset('9-log-stream-lambda'),
             role=async_stream_lambda_role,
-            timeout=core.Duration.seconds(180),
+            timeout=core.Duration.seconds(720),
             layers=[lambda_layer],
-            tracing=_lambda.Tracing.ACTIVE,
+            tracing=_lambda.Tracing.DISABLED,
         )
 
         log_stream_lambda.add_environment("STACK_NAME", stack_name)
@@ -102,9 +102,10 @@ class HyperBatchCore(core.Stack):
         kinesis_event_source = lambda_event_sources.KinesisEventSource(
             stream=kinesis_log_stream,
             starting_position=_lambda.StartingPosition.LATEST,
-            batch_size=10000,
+            batch_size=5000,
+            parallelization_factor=1,
             max_batching_window=core.Duration.minutes(1),
-            retry_attempts=0
+            retry_attempts=3
         )
         # Attach New Event Source To Lambda
         log_stream_lambda.add_event_source(kinesis_event_source)
@@ -119,7 +120,7 @@ class HyperBatchCore(core.Stack):
             memory_size=1024,
             timeout=core.Duration.seconds(180),
             layers=[lambda_layer],
-            tracing=_lambda.Tracing.ACTIVE
+            tracing=_lambda.Tracing.DISABLED
         )
 
         async_stream_lambda.add_environment("REGION", self.region)
@@ -144,7 +145,7 @@ class HyperBatchCore(core.Stack):
             memory_size=1024,
             timeout=core.Duration.seconds(180),
             layers=[lambda_layer],
-            tracing=_lambda.Tracing.ACTIVE
+            tracing=_lambda.Tracing.DISABLED
         )
 
         async_to_logs_lambda.add_environment("STACK_NAME", stack_name)
@@ -174,7 +175,7 @@ class HyperBatchCore(core.Stack):
                 memory_size=1024,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
-                tracing=_lambda.Tracing.ACTIVE
+                tracing=_lambda.Tracing.DISABLED
             )
 
             async_to_es_lambda.add_environment("REGION", self.region)
@@ -202,7 +203,7 @@ class HyperBatchCore(core.Stack):
             timeout=core.Duration.seconds(180),
             role=async_stream_lambda_role,
             layers=[lambda_layer],
-            tracing=_lambda.Tracing.ACTIVE,
+            tracing=_lambda.Tracing.DISABLED,
         );
 
         get_start_delete_lambda.add_environment("MAIN_REGION", main_region)
@@ -252,7 +253,7 @@ class HyperBatchCore(core.Stack):
             definition=definition,
             timeout=core.Duration.minutes(10080),
             state_machine_name=str(stack_name + '-SfM'),
-            tracing_enabled=True
+            tracing_enabled=False
         );
 
         ssm.StringParameter(self, str(stack_name + '-sf-param'),
@@ -270,7 +271,7 @@ class HyperBatchCore(core.Stack):
             role=async_stream_lambda_role,
             timeout=core.Duration.seconds(180),
             layers=[lambda_layer],
-            tracing=_lambda.Tracing.ACTIVE,
+            tracing=_lambda.Tracing.DISABLED,
         )
         failed_worker_lambda.add_environment("MAIN_REGION", main_region)
 

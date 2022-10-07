@@ -83,6 +83,7 @@ def main():
 
             sf = boto3.client('stepfunctions', region_name=region)
             kinesis_2 = boto3.client('kinesis', region_name=region)
+            ENABLE_QLOG = os.getenv("ENABLE_QLOG", "True")
 
             while self._running:
                 try:
@@ -95,17 +96,18 @@ def main():
                     break
                 
                 try:
-                    # Get metric data on cpu and mem usage
-                    mem_data = psutil.virtual_memory()._asdict()
-                    metric_data = {'cpu_count': psutil.cpu_count(), 'cpu_percent': psutil.cpu_percent(), 'mem_total_gb': mem_data['total']/1000000000, 'mem_used_gb':mem_data['used']/1000000000, 'mem_percent': mem_data['percent']}
-                    package = [{'time_stamp': datetime.now().isoformat(), 'log_type': 'METRICS', 'id': JobName, 'jobDefinition': jobDefinition, 'jobQueue': JobQueue, 'data': metric_data}]
-                    # Send to kinesis log stream in main region
-                    kinesis_response = kinesis_2.put_record(
-                        StreamName=stack_name + '_log_stream',
-                        Data=bytes(json.dumps(package, default=str), 'utf-8'),
-                        PartitionKey=jobDefinition
-                    )
-                    cyc_root_log.info('## SENT METRIC PACKAGE: ' + datetime.now().isoformat())
+                    if not ENABLE_QLOG == 'False' or ENABLE_QLOG == False:
+                        # Get metric data on cpu and mem usage
+                        mem_data = psutil.virtual_memory()._asdict()
+                        metric_data = {'cpu_count': psutil.cpu_count(), 'cpu_percent': psutil.cpu_percent(), 'mem_total_gb': mem_data['total']/1000000000, 'mem_used_gb':mem_data['used']/1000000000, 'mem_percent': mem_data['percent']}
+                        package = [{'time_stamp': datetime.now().isoformat(), 'log_type': 'METRICS', 'id': JobName, 'jobDefinition': jobDefinition, 'jobQueue': JobQueue, 'data': metric_data}]
+                        # Send to kinesis log stream in main region
+                        kinesis_response = kinesis_2.put_record(
+                            StreamName=stack_name + '_log_stream',
+                            Data=bytes(json.dumps(package, default=str), 'utf-8'),
+                            PartitionKey=jobDefinition
+                        )
+                        cyc_root_log.info('## SENT METRIC PACKAGE: ' + datetime.now().isoformat())
                 except Exception as e:
                     cyc_root_log.error('## FAILED TO SEND METRICS PACKAGE: ' + str(e) + ' -- ' + datetime.now().isoformat())
                     pass
