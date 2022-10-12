@@ -1,7 +1,7 @@
 import json
 import time
 import os
-from typing import Dict, List
+from typing import Mapping, Sequence
 from pulumi import Input, Output
 from pulumi.dynamic import Resource, ResourceProvider, CreateResult, UpdateResult, DiffResult
 import requests
@@ -39,18 +39,18 @@ class CycloneDefinitionArgs(object):
     vcpus: Input[int]
     memory_limit_mib: Input[int]
     linux_parameters: Input[str]
-    ulimits: Input[List[str]]
-    mount_points: Input[List[str]]
-    host_volumes: Input[List[str]]
+    ulimits: Input[Sequence[str]]
+    mount_points: Input[Sequence[str]]
+    host_volumes: Input[Sequence[str]]
     gpu_count: Input[int]
-    environment: Input[Dict[str,str]]
+    environment: Input[Mapping[str,str]]
     privileged: Input[bool]
     user: Input[str]
     jobs_to_workers_ratio: Input[int]
     timeout_minutes: Input[int]
-    iam_policies: Input[List[str]]
+    iam_policies: Input[Sequence[str]]
     log_driver: Input[str]
-    log_options: Input[Dict[str,str]]
+    log_options: Input[Mapping[str,str]]
     enable_qlog: Input[bool]
 
     def __init__(
@@ -62,18 +62,18 @@ class CycloneDefinitionArgs(object):
         vcpus: Input[int] = 1,
         memory_limit_mib: Input[int] = 2048,
         linux_parameters: Input[str] = "",
-        ulimits: Input[List[str]] = [],
-        mount_points: Input[List[str]] = [],
-        host_volumes: Input[List[str]] = [],
+        ulimits: Input[Sequence[str]] = [],
+        mount_points: Input[Sequence[str]] = [],
+        host_volumes: Input[Sequence[str]] = [],
         gpu_count: Input[int] = "",
-        environment: Input[Dict[str,str]] = {"LOG_LEVEL": "INFO", "JSON_LOGGING": "True"},
+        environment: Input[Mapping[str,str]] = {"LOG_LEVEL": "INFO", "JSON_LOGGING": "True"},
         privileged: Input[bool] = False,
         user: Input[str] = "",
         jobs_to_workers_ratio: Input[int] = 1,
         timeout_minutes: Input[int] = "",
-        iam_policies: Input[List[str]] = [],
+        iam_policies: Input[Sequence[str]] = [],
         log_driver: Input[str] = "JSON_FILE",
-        log_options: Input[Dict[str,str]] = {"max-size": "10m", "max-file": "3"},
+        log_options: Input[Mapping[str,str]] = {"max-size": "10m", "max-file": "3"},
         enable_qlog: Input[bool] = False,
     ):
         self.name = name
@@ -217,18 +217,18 @@ class CycloneDefinition(Resource):
     vcpus: Output[int]
     memory_limit_mib: Output[int]
     linux_parameters: Output[str]
-    ulimits: Output[List[str]]
-    mount_points: Output[List[str]]
-    host_volumes: Output[List[str]]
+    ulimits: Output[Sequence[str]]
+    mount_points: Output[Sequence[str]]
+    host_volumes: Output[Sequence[str]]
     gpu_count: Output[int]
-    environment: Output[Dict[str,str]]
+    environment: Output[Mapping[str,str]]
     privileged: Output[bool]
     user: Output[str]
     jobs_to_workers_ratio: Output[int]
     timeout_minutes: Output[int]
-    iam_policies: Output[List[str]]
+    iam_policies: Output[Sequence[str]]
     log_driver: Output[str]
-    log_options: Output[Dict[str,str]]
+    log_options: Output[Mapping[str,str]]
     enable_qlog: Output[bool]
 
     def __init__(self, name, args: CycloneDefinitionArgs, opts=None):

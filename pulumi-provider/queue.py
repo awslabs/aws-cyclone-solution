@@ -1,7 +1,7 @@
 import json
 import time
 import os
-from typing import Any, Dict
+from typing import Any, Mapping
 from pulumi import Input, Output
 from pulumi.dynamic import Resource, ResourceProvider, CreateResult, UpdateResult, DiffResult
 import requests
@@ -35,14 +35,14 @@ class CycloneQueueArgs(object):
     name: Input[str]
     computeEnvironment: Input[str]
     optimise_lowest_spot_cost_region: Input[bool]
-    region_distribution_weights: Input[Dict[str,int]]
+    region_distribution_weights: Input[Mapping[str, Any]]
 
     def __init__(
         self,
         name: Input[str],
         computeEnvironment: Input[str],
         optimise_lowest_spot_cost_region: Input[bool] = True,
-        region_distribution_weights: Input[Dict[str, Any]] = {"us-east-1": "auto"},
+        region_distribution_weights: Input[Mapping[str, Any]] = {"us-east-1": "auto"},
     ):
         self.name = name
         self.computeEnvironment = computeEnvironment
@@ -168,7 +168,7 @@ class CycloneQueue(Resource):
     name: Output[str]
     computeEnvironment: Output[str]
     optimise_lowest_spot_cost_region: Output[bool]
-    region_distribution_weights: Output[Dict[str, Any]]
+    region_distribution_weights: Output[Mapping[str, Any]]
 
     def __init__(self, name, args: CycloneQueueArgs, opts=None):
         super().__init__(CycloneQueueProvider(), name, vars(args), opts)

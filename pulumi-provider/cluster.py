@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import List
+from typing import Sequence
 from pulumi import Input, Output
 from pulumi.dynamic import Resource, ResourceProvider, CreateResult, UpdateResult, DiffResult
 import requests
@@ -33,23 +33,23 @@ def get_status(name):
 
 class CycloneClusterArgs(object):
     name: Input[str]
-    instance_list: Input[List[str]]
+    instance_list: Input[Sequence[str]]
     type: Input[str]
     allocation_strategy: Input[str]
     bid_percentage: Input[int]
     max_vCPUs: Input[int]
-    iam_policies: Input[List[str]]
+    iam_policies: Input[Sequence[str]]
     main_region_image_name: Input[str]
 
     def __init__(
         self,
         name: Input[str],
-        instance_list: Input[List[str]] = ["optimal"],
+        instance_list: Input[Sequence[str]] = ["optimal"],
         type: Input[str] = "SPOT",
         allocation_strategy: Input[str] = "SPOT_CAPACITY_OPTIMIZED",
         bid_percentage: Input[int] = 100,
         max_vCPUs: Input[int] = 1000,
-        iam_policies: Input[List[str]] = [],
+        iam_policies: Input[Sequence[str]] = [],
         main_region_image_name: Input[str] = "",
     ):
         self.name = name
@@ -176,12 +176,12 @@ class CycloneClusterProvider(ResourceProvider):
 
 class CycloneCluster(Resource):
     name: Output[str]
-    instance_list: Output[List[str]]
+    instance_list: Output[Sequence[str]]
     type: Output[str]
     allocation_strategy: Output[str]
     bid_percentage: Output[int]
     max_vCPUs: Output[int]
-    iam_policies: Output[List[str]]
+    iam_policies: Output[Sequence[str]]
     main_region_image_name: Output[str]
 
     def __init__(self, name, args: CycloneClusterArgs, opts=None):
