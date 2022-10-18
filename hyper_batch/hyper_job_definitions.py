@@ -102,11 +102,12 @@ class JobDefinitions(core.Stack):
 
             if job_definition['use_cyclone_image'] == "True":
                 image_uri = '{}.dkr.ecr.{}.amazonaws.com/{}:{}'.format(self.account, self.region, stack_name, job_definition['cyclone_image_name'])
+            
+            elif "$REGION" in str(job_definition['image_uri']):
+                image_uri = str(job_definition['image_uri']).replace("$REGION", self.region)
+            
             else:
-                if "$REGION" in str(job_definition['image_uri']):
-                    image_uri = str(job_definition['image_uri']).replace("$REGION", self.region)
-                else:
-                    image_uri = job_definition['image_uri']
+                image_uri = job_definition['image_uri']
 
             container = ecs.ContainerImage.from_registry(image_uri)
 
