@@ -162,7 +162,12 @@ def main():
                 cyc_root_log.info('## JOB SUCCESSFUL: ' + ' -- ' + datetime.now().isoformat())
                 return result, 'Successful'
             else:
-                result = 'FAILED\n' + proc.stderr.read()
+                stdout_fail = ''
+                try:
+                    stdout_fail = proc.stdout.read()
+                except Exception:
+                    pass
+                result = 'FAILED\n' + stdout_fail
                 status = 'Failed'
                 cyc_root_log.error('## JOB FAILED: ' + result + ' -- ' + datetime.now().isoformat())
                 return result, status
