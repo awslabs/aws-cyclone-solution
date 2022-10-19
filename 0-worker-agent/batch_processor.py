@@ -162,18 +162,13 @@ def main():
                 cyc_root_log.info('## JOB SUCCESSFUL: ' + ' -- ' + datetime.now().isoformat())
                 return result, 'Successful'
             else:
-                stdout_fail = ''
-                try:
-                    stdout_fail = proc.stdout.read()
-                except Exception:
-                    pass
-                result = 'FAILED\n' + stdout_fail
-                status = 'Failed'
+                result = result + 'CYCLONE: Job executable had a non 0 exit code, retries set to zero.\n'
+                status = 'JobFailed'
                 cyc_root_log.error('## JOB FAILED: ' + result + ' -- ' + datetime.now().isoformat())
                 return result, status
         except Exception as e:
             cyc_root_log.error('## JOB EXECUTION SUBPROCESS FAILED: ' + str(e) + ' -- ' + datetime.now().isoformat())
-            result = 'FAILED\n' + str(e)
+            result = 'CYCLONE: Worker Subprocess for executable failed\n' + str(e)
             status = 'Failed'
             return result, status
 

@@ -107,6 +107,19 @@ def lambda_handler(event, context):
                                 )
                             logger.info('## PUT MESSAGE DYNAMODB RESPONSE\r' + jsonpickle.encode(update))
                             break
+                    elif Status == 'JobFailed':
+                        NewRetries = 0
+                        Status = 'Failed'
+                        update = dynamo.update_item(
+                            TableName=table,
+                            Key={'id': {'S': job_id}},
+                            UpdateExpression="set #attr1 = :p, #attr2 = :r, #attr3 = :q, #attr4 = :t",
+                            ExpressionAttributeNames={'#attr1': 'Status', '#attr2': 'Output', '#attr3': 'RetriesAvailable', '#attr4': 'tRetry'},
+                            ExpressionAttributeValues={':p': {'S': str(Status)}, ':r': {'S': str(Output)}, ':q': {'N': str(NewRetries)}, ':t': {'S': time_stamp}},
+                            ReturnValues="UPDATED_NEW"
+                            )
+                        logger.info('## PUT MESSAGE DYNAMODB RESPONSE\r' + jsonpickle.encode(update))
+                        break
 
 
                     elif Status == 'Running':

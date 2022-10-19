@@ -241,7 +241,7 @@ class HyperBatchCore(core.Stack):
             result_path= '$.UpdateFailOutput'
         );
 
-        LookAtResult = sfn.Choice(self, 'LookAtResult').when(sfn.Condition.is_present('$.lastJob.Error'),  UpdateFail).when(sfn.Condition.string_equals('$.lastJob.LeaveRunning', 'False'), CleanUpDynamo).when(sfn.Condition.string_equals('$.lastJob.Status', 'Successful'), GetStartDelete).otherwise(UpdateFail)
+        LookAtResult = sfn.Choice(self, 'LookAtResult').when(sfn.Condition.is_present('$.lastJob.Error'),  UpdateFail).when(sfn.Condition.string_equals('$.lastJob.LeaveRunning', 'False'), CleanUpDynamo).when(sfn.Condition.string_equals('$.lastJob.Status', 'Successful'), GetStartDelete).when(sfn.Condition.string_equals('$.lastJob.Status', 'JobFailed'), GetStartDelete).otherwise(UpdateFail)
 
         ContinueOrFinish = sfn.Choice(self, 'ContinueOrFinish').when(sfn.Condition.string_equals('$.lastJob.Error', 'States.Timeout'), CleanUpDynamo).otherwise(GetStartDelete)
 
