@@ -61,7 +61,10 @@ def respond(err, res=None, id=None):
     }
 
 def respond_2(err, res=None):
-    res = replace_decimals(res)
+    try:
+        res = replace_decimals(res)
+    except Exception:
+        pass
     return {
         'statusCode': '400' if err else '200',
         'body': err.message if err else json.dumps(res),
@@ -196,7 +199,40 @@ def lambda_handler(event, context):
                             'Content-Type': 'application/json',
                         },
                     }
+                    
+    elif operation == 'DELETE' and 'job_name' in body['payload']['Key']:
+        payload = {
+                        "KeyConditionExpression": '#ec4d3=:jobName',
+                        "ProjectionExpression": "#ec4d0, #ec4d3",
+                        "ExpressionAttributeNames": {"#ec4d0":"id","#ec4d3":"jobName"},
+                        'ExpressionAttributeValues':{":jobName":body['payload']['Key']['job_name']},
+                        'IndexName':'index_jobName',
+                    }
+        scan = None
 
+        with dynamo.batch_writer() as writer:
+            count = 0
+            while scan is None or 'LastEvaluatedKey' in scan:
+                if scan is not None and 'LastEvaluatedKey' in scan:
+                    payload['ExclusiveStartKey'] = scan['LastEvaluatedKey']
+                    scan = operations['QUERY'](dynamo, payload)
+                else:
+                    scan = operations['QUERY'](dynamo, payload)
+
+                for item in scan['Items']:
+                    print(item)
+                    writer.delete_item(Key={'id': item['id']})
+        res = {}
+        res['job_name'] = body['payload']['Key']['job_name']
+        res['ResponseMetadata'] = {}
+        res['ResponseMetadata']['HTTPStatusCode'] = 200
+        return {
+                            'statusCode': '200',
+                            'body': json.dumps(res),
+                            'headers': {
+                                'Content-Type': 'application/json',
+                            },
+                        }
     elif operation == 'GET' or 'DELETE' or 'PUT' or 'LIST' or 'QUERY':
         return respond_2(None, operations[operation](dynamo, body['payload']))
     else:

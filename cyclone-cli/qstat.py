@@ -22,7 +22,7 @@ import json
 import os
 import json
 import requests
-
+from boto3.dynamodb.conditions import Key, Attr
 
 
 def get_config(json_dir):
@@ -114,21 +114,32 @@ def cli(ctx, job_id, job_name, queue, filter_status, only_job_id_out):
             click.echo(k + ' : ' + str(v))
         return item
     elif not job_name == None:
-        message = json.dumps(
-                            {
-                                "operation": "QUERY",
-                                "TableName": queue,
-                                "payload":{
+
+        if filter_status == None:
+            payload = {
                                     "KeyConditionExpression": '#ec4d3=:jobName',
                                     "ProjectionExpression": "#ec4d0,#ec4d1,#ec4d2,#ec4d3",
                                     "ExpressionAttributeNames": {"#ec4d0":"id","#ec4d1":"Status","#ec4d2":"RetriesAvailable","#ec4d3":"jobName"},
                                     'ExpressionAttributeValues':{":jobName":job_name},
-                                    'IndexName':'index_jobName'
+                                    'IndexName':'index_jobName',
                                 }
+        else:
+            payload = {
+                                    "KeyConditionExpression": '#ec4d3=:jobName',
+                                    "ProjectionExpression": "#ec4d0,#ec4d1,#ec4d2,#ec4d3",
+                                    "ExpressionAttributeNames": {"#ec4d0":"id","#ec4d1":"Status","#ec4d2":"RetriesAvailable","#ec4d3":"jobName"},
+                                    'ExpressionAttributeValues':{":jobName":job_name, ":Status":filter_status},
+                                    'IndexName':'index_jobName',
+                                    'FilterExpression': '#ec4d1=:Status'
+                                }
+        message = json.dumps(
+                            {
+                                "operation": "QUERY",
+                                "TableName": queue,
+                                "payload":payload
                             }
                             )
         
-
         url = ctx.obj.url
         header = {"x-api-key" : ctx.obj.key}
         post = requests.post(url, data=message, headers=header)
@@ -147,18 +158,12 @@ def cli(ctx, job_id, job_name, queue, filter_status, only_job_id_out):
         counts = print_queue_short(items, filter_status, only_job_id_out, counts)
 
         while 'LastEvaluatedKey' in j:
+            payload['ExclusiveStartKey'] = j['LastEvaluatedKey']
             message = json.dumps(
                             {
                                 "operation": "QUERY",
                                 "TableName": queue,
-                                "payload":{
-                                    "KeyConditionExpression": '#ec4d3=:jobName',
-                                    "ProjectionExpression": "#ec4d0,#ec4d1,#ec4d2,#ec4d3",
-                                    "ExpressionAttributeNames": {"#ec4d0":"id","#ec4d1":"Status","#ec4d2":"RetriesAvailable","#ec4d3":"jobName"},
-                                    'ExpressionAttributeValues':{":jobName":job_name},
-                                    'IndexName':'index_jobName',
-                                    "ExclusiveStartKey": j['LastEvaluatedKey']
-                                }
+                                "payload":payload
                             }
                             )
 

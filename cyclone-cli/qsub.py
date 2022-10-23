@@ -187,6 +187,12 @@ def cli(ctx, job_name, queue, retries, definition, commands, filename, params, a
     header = {"x-api-key" : ctx.obj.key}
     post = requests.post(url, data=json.dumps(message), headers=header)
     j = post.json()
+    try:
+        if j['message'] == 'Endpoint request timed out':
+            click.echo('Lambda submitting in background, use qstat -q <queue-name> -j <job-name> to view submit')
+            return
+    except Exception:
+        pass
     
     try:
         job_id = j['job_id']

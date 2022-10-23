@@ -45,10 +45,10 @@ class client(object):
 @click.command()
 @click.pass_context
 @click.option('-q', '--queue', required=True, default=None, help='Name of queue to delete jobs from')
-@click.argument('job-ids', nargs=-1)
-def cli(ctx, job_ids, queue):
-    """Enter job Ids you would like to delete. You can use "only-job-id-out=True" in a qstat query to then pass 
-    results to qdel e.g "qdel -q <queue> $(qstat -q <queue> --filter-status <status> --only-job-id-out true)" 
+@click.option('-i', '--job-id', required=False, default=None, help='Job id to delete')
+@click.option('-j', '--job-name', required=False, default=None, help='Job name batch deletion')
+def cli(ctx, queue, job_id, job_name):
+    """Enter job id to delete or enter a job name to do a batch deletion. If you have a lot of jobs in queue you can run the qdel commands multiple times to have multiple lambdas deleting a job name in background. 
     """
     host_name = None
     try:
@@ -65,12 +65,33 @@ def cli(ctx, job_ids, queue):
         click.echo('Use "list-hosts" command to see existing hosts or create a new host with "create-host"')
     else:
         ctx.obj = client(host_name)
-    if len(job_ids) < 1:
-        click.echo('No job ids provided, use qdel -q <queue-name> <id1> <id2>')
-        return
-    for job_id in job_ids:
-        list = job_id.splitlines()
-        for job_id in list:
+
+    if not job_name == None:
+        message = json.dumps(
+                    {
+                        "operation": "DELETE",
+                        "TableName": queue,
+                        "payload":{"Key": {"job_name": job_name}
+                        }
+                    }  
+        )
+        url = ctx.obj.url
+        header = {"x-api-key" : ctx.obj.key}
+        post = requests.post(url, data=message, headers=header)
+        j = post.json()
+        try:
+            if j['message'] == 'Endpoint request timed out':
+                click.echo('Lambda is continuing deleting in background, run command again to increase parallel delete operations')
+                return
+        except Exception:
+            pass
+        if j['ResponseMetadata']['HTTPStatusCode'] == 200:
+            click.echo('Successfully Deleted Job Name: ' + job_name)
+            return
+        else:
+            click.echo('FAILED: ' + j)
+
+    elif not job_id == None:
     
             message = json.dumps(
                                 {
@@ -86,7 +107,8 @@ def cli(ctx, job_ids, queue):
             post = requests.post(url, data=message, headers=header)
             j = post.json()
             if j['ResponseMetadata']['HTTPStatusCode'] == 200:
-                click.echo('Successfully Deleted: ' + job_id)
+                click.echo('Successfully Deleted Job ID: ' + job_id)
+                return
             else:
                 click.echo('FAILED: ' + j)
     return j
