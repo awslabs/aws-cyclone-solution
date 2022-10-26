@@ -1106,7 +1106,7 @@
                 },
                 "MethodSettings": [
                     {
-                        "DataTraceEnabled": true,
+                        "DataTraceEnabled": false,
                         "HttpMethod": "*",
                         "LoggingLevel": "ERROR",
                         "ResourcePath": "/*"
