@@ -147,8 +147,9 @@ def cli(ctx, job_name, queue, retries, definition, commands, filename, params, a
         for job in jobs:
             job = json.loads(job.replace("'",'"'))
             item = {}
+            item['commands'] = message['Item']['commands']
             for k,v in job.items():
-                item['commands'] = message['Item']['commands'].replace(k,v)
+                item['commands'] = item['commands'].replace(k,v)
 
             lines = item['commands'].splitlines()
             for line in lines:
