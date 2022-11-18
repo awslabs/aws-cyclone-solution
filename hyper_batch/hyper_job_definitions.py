@@ -12,17 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
+import aws_cdk as core
 from aws_cdk import (
-    core,
-    aws_batch as batch,
     aws_ecs as ecs,
     aws_iam as iam,
     aws_sqs as sqs,
     aws_ssm as ssm,
     aws_ec2 as ec2
     )
-
+import aws_cdk.aws_batch_alpha as batch
+from constructs import Construct
 import json
 
 
@@ -43,7 +42,7 @@ job_definitions = job_definitions_config['jobDefinitions']
 
 class JobDefinitions(core.Stack):
 
-  def __init__(self, scope: core.Construct, id: str, *, is_main_region: str=None, stack_name: str=None, **kwargs) -> None:
+  def __init__(self, scope: Construct, id: str, *, is_main_region: str=None, stack_name: str=None, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         if is_main_region == 'True':

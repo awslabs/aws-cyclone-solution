@@ -11,9 +11,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import aws_cdk as core
 from aws_cdk import (
-    core,
     aws_lambda as _lambda,
     aws_dynamodb as dynamodb,
     aws_logs as logs,
@@ -29,7 +28,7 @@ from aws_cdk import (
     aws_backup as backup,
     aws_autoscaling as autoscaling
     )
-
+from constructs import Construct
 import os
 import subprocess
 import boto3
@@ -67,7 +66,7 @@ def check_api_exists(main_region, stack_name):
 
 class HyperFrontEnd(core.Stack):
 
-  def __init__(self, scope: core.Construct, id: str, *, account: str=None, stack_name: str=None, enable_dashboard: str=None, import_vpc: str=None, vpc_id: str=None, cidr: str=None, **kwargs) -> None:
+  def __init__(self, scope: Construct, id: str, *, account: str=None, stack_name: str=None, enable_dashboard: str=None, import_vpc: str=None, vpc_id: str=None, cidr: str=None, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # DynamoDB Tables
@@ -187,7 +186,7 @@ class HyperFrontEnd(core.Stack):
             api_handler_lambda = _lambda.Function(self, str(stack_name +'ApiHandlerLambda'),
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="api-handler-lambda.lambda_handler",
-                code=_lambda.Code.asset('1-api-handler-lambda'),
+                code=_lambda.Code.from_asset('1-api-handler-lambda'),
                 role=api_handler_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
@@ -197,7 +196,7 @@ class HyperFrontEnd(core.Stack):
             api_config_lambda = _lambda.Function(self, str(stack_name +'ApiConfigLambda'),
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="api-config-lambda.lambda_handler",
-                code=_lambda.Code.asset('13-api-config-lambda'),
+                code=_lambda.Code.from_asset('13-api-config-lambda'),
                 role=api_handler_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
@@ -254,16 +253,16 @@ class HyperFrontEnd(core.Stack):
                 )
                 ]
             )
-
-
-            core.CfnOutput(self, "API_URL", value=job_api_config.url)
-            ssm.StringParameter(self, str(stack_name + '-api-url-ssm'), string_value=job_api_config.url, parameter_name=str(stack_name + '_api_url'))
+            config_url = job_api.url + '/config'
+            job_url = job_api.url + '/jobs'
+            core.CfnOutput(self, "API_URL", value=config_url)
+            ssm.StringParameter(self, str(stack_name + '-api-url-ssm'), string_value=config_url, parameter_name=str(stack_name + '_api_url'))
 
             core.CfnOutput(self, "API_KEY", value=api_key_value)
             ssm.StringParameter(self, id=str(stack_name + "-api-key-ssm"), string_value=api_key_value, parameter_name=str(stack_name + '_api_key'))
 
-            core.CfnOutput(self, "JOB_URL", value=job_api_jobs.url)
-            ssm.StringParameter(self, id=str(stack_name + "_job_url"), string_value=job_api_jobs.url, parameter_name=str(stack_name + '_job_url'))
+            core.CfnOutput(self, "JOB_URL", value=job_url)
+            ssm.StringParameter(self, id=str(stack_name + "_job_url"), string_value=job_url, parameter_name=str(stack_name + '_job_url'))
 
             ssm.StringParameter(self, id=str(stack_name + "_enable_dashboard"), string_value=enable_dashboard, parameter_name=str(stack_name + '_enable_dashboard'))
 

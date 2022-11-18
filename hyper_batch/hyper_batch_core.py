@@ -11,9 +11,9 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import aws_cdk as core
+from constructs import Construct
 from aws_cdk import (
-    core,
     aws_lambda as _lambda,
     aws_dynamodb as dynamodb,
     aws_iam as iam,
@@ -31,7 +31,7 @@ import subprocess
 
 class HyperBatchCore(core.Stack):
 
-  def __init__(self, scope: core.Construct, id: str, *, stack_name: str=None, main_region: str=None, is_main_region: str=None, import_vpc: str=None, cidr: str=None, vpc_id: str=None, peer_with_main_region: str=None, enable_dashboard: str=None,  **kwargs) -> None:
+  def __init__(self, scope: Construct, id: str, *, stack_name: str=None, main_region: str=None, is_main_region: str=None, import_vpc: str=None, cidr: str=None, vpc_id: str=None, peer_with_main_region: str=None, enable_dashboard: str=None,  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         async_role_arn = f'arn:aws:iam::{self.account}:role/{stack_name}-AsyncStreamLambdaRole'
@@ -88,7 +88,7 @@ class HyperBatchCore(core.Stack):
         log_stream_lambda = _lambda.Function(self, stack_name + 'log-stream-lambda',
             runtime=_lambda.Runtime.PYTHON_3_8,
             handler="log-stream-lambda.lambda_handler",
-            code=_lambda.Code.asset('9-log-stream-lambda'),
+            code=_lambda.Code.from_asset('9-log-stream-lambda'),
             role=async_stream_lambda_role,
             timeout=core.Duration.seconds(720),
             layers=[lambda_layer],
@@ -115,7 +115,7 @@ class HyperBatchCore(core.Stack):
         async_stream_lambda = _lambda.Function(self, "AsyncStreamLambda",
             runtime=_lambda.Runtime.PYTHON_3_8,
             handler="async-stream-lambda.lambda_handler",
-            code=_lambda.Code.asset('5-async-stream-lambda'),
+            code=_lambda.Code.from_asset('5-async-stream-lambda'),
             role=async_stream_lambda_role,
             memory_size=1024,
             timeout=core.Duration.seconds(180),
@@ -140,7 +140,7 @@ class HyperBatchCore(core.Stack):
         async_to_logs_lambda = _lambda.Function(self, str('lambda-async-logs-' + stack_name),
             runtime=_lambda.Runtime.PYTHON_3_8,
             handler="async-to-logs-lambda.lambda_handler",
-            code=_lambda.Code.asset('11-async-to-logs-lambda'),
+            code=_lambda.Code.from_asset('11-async-to-logs-lambda'),
             role=async_stream_lambda_role,
             memory_size=1024,
             timeout=core.Duration.seconds(180),
@@ -170,7 +170,7 @@ class HyperBatchCore(core.Stack):
             async_to_es_lambda = _lambda.Function(self, "AsyncToEsLambda",
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="async-to-es.lambda_handler",
-                code=_lambda.Code.asset('7-async-to-elasticsearch'),
+                code=_lambda.Code.from_asset('7-async-to-elasticsearch'),
                 role=async_stream_lambda_role,
                 memory_size=1024,
                 timeout=core.Duration.seconds(180),
@@ -199,7 +199,7 @@ class HyperBatchCore(core.Stack):
         get_start_delete_lambda = _lambda.Function(self, "GetStartDeleteLambda",
             runtime=_lambda.Runtime.PYTHON_3_8,
             handler="get-start-delete-lambda.lambda_handler",
-            code=_lambda.Code.asset('4-get-start-delete-lambda'),
+            code=_lambda.Code.from_asset('4-get-start-delete-lambda'),
             timeout=core.Duration.seconds(180),
             role=async_stream_lambda_role,
             layers=[lambda_layer],
@@ -267,7 +267,7 @@ class HyperBatchCore(core.Stack):
         failed_worker_lambda = _lambda.Function(self, str(stack_name + 'failed-worker'),
             runtime=_lambda.Runtime.PYTHON_3_8,
             handler="failed-worker-lambda.lambda_handler",
-            code=_lambda.Code.asset('8-failed-worker-lambda'),
+            code=_lambda.Code.from_asset('8-failed-worker-lambda'),
             role=async_stream_lambda_role,
             timeout=core.Duration.seconds(180),
             layers=[lambda_layer],

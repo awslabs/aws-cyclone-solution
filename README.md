@@ -106,9 +106,9 @@ All create resource commands have a guided walk-through to create resources and 
   2. When you have created a new host you need to initiate your main region
   first with "hyper regions init-main-region". Check deployment status of main region with "hyper regions list-regions". It is recommended to wait for the main region to be initiated before adding additional hub regions.
   
-  1. You can also take some time to explore the CLI groupings and commands within each such as "hyper regions", "hyper clusters" & "hyper queues". All provide a list, add, update and delete command for each resource type. When you add a new resource use the list resource command to view deployment status and any error logs. If you need to update a specif parameter for a resource you can use update command to make changes and re-deploy. 
+  3. You can also take some time to explore the CLI groupings and commands within each such as "hyper regions", "hyper clusters" & "hyper queues". All provide a list, add, update and delete command for each resource type. When you add a new resource use the list resource command to view deployment status and any error logs. If you need to update a specif parameter for a resource you can use update command to make changes and re-deploy. 
 
-  2. If your main region is now in Status=ACTIVE, you can start by adding your first hub region with the "hyper regions add-region" command and following the guided walk-through. You can add more regions, update and delete them at any time using "update-region" & "delete-region. Use "list-regions" to view
+  4. If your main region is now in Status=ACTIVE, you can start by adding your first hub region with the "hyper regions add-region" command and following the guided walk-through. You can add more regions, update and delete them at any time using "update-region" & "delete-region. Use "list-regions" to view
   existing region configurations and deployment logs.
 
   5. If you are happy with regions for now move on to create your first

@@ -11,15 +11,14 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import aws_cdk as core
 from aws_cdk import (
-    core,
     aws_iam as iam,
     aws_elasticsearch as es,
     aws_ssm as ssm,
     aws_opensearchservice as opensearch
     )
-
+from constructs import Construct
 import os
 import subprocess
 import jsonpickle
@@ -33,7 +32,7 @@ def get_config(json_dir):
 
 class Dashboard(core.Stack):
 
-  def __init__(self, scope: core.Construct, id: str, *, stack_name: str=None, **kwargs) -> None:
+  def __init__(self, scope: Construct, id: str, *, stack_name: str=None, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         async_role_arn = f'arn:aws:iam::{self.account}:role/{stack_name}-AsyncStreamLambdaRole'

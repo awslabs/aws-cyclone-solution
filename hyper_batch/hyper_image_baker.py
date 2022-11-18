@@ -11,13 +11,12 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import aws_cdk as core
 from aws_cdk import (
-    core,
     aws_ecr as ecr,
     aws_ecr_assets as ecr_assets,
     )
-
+from constructs import Construct
 import json
 import boto3
 import cdk_ecr_deployment as ecrdeploy
@@ -45,7 +44,7 @@ def repo_exist(stack_name, region):
 
 class Images(core.Stack):
 
-  def __init__(self, scope: core.Construct, id: str, *, main_region: str=None, stack_name: str=None,  **kwargs) -> None:
+  def __init__(self, scope: Construct, id: str, *, main_region: str=None, stack_name: str=None,  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
         
         if repo_exist(stack_name, self.region):

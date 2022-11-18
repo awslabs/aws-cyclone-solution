@@ -12,9 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
+import aws_cdk as core
 from aws_cdk import (
-    core,
     aws_lambda as _lambda,
     aws_dynamodb as dynamodb,
     aws_iam as iam,
@@ -24,7 +23,7 @@ from aws_cdk import (
     aws_logs as logs,
     aws_s3 as s3
     )
-
+from constructs import Construct
 import os
 import subprocess
 import boto3
@@ -155,7 +154,7 @@ def calculate_weights(cluster_name, region_weight_distributions):
 
 class Queues(core.Stack):
 
-    def __init__(self, scope: core.Construct, id: str, *, main_region: str=None, stack_name: str=None, enable_dashboard: str=None, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, *, main_region: str=None, stack_name: str=None, enable_dashboard: str=None, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         async_role_arn = f'arn:aws:iam::{self.account}:role/{stack_name}-AsyncStreamLambdaRole'
@@ -217,7 +216,7 @@ class Queues(core.Stack):
             api_handler_lambda = _lambda.Function(self, str(stack_name +'ApiHandlerLambda'),
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="api-handler-lambda.lambda_handler",
-                code=_lambda.Code.asset('1-api-handler-lambda'),
+                code=_lambda.Code.from_asset('1-api-handler-lambda'),
                 role=api_handler_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
@@ -227,7 +226,7 @@ class Queues(core.Stack):
             api_config_lambda = _lambda.Function(self, str(stack_name +'ApiConfigLambda'),
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="api-config-lambda.lambda_handler",
-                code=_lambda.Code.asset('13-api-config-lambda'),
+                code=_lambda.Code.from_asset('13-api-config-lambda'),
                 role=api_handler_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
@@ -284,15 +283,16 @@ class Queues(core.Stack):
                 )
                 ]
             )
-
-            core.CfnOutput(self, "API_URL", value=job_api_config.url)
-            ssm.StringParameter(self, str(stack_name + '-api-url-ssm'), string_value=job_api_config.url, parameter_name=str(stack_name + '_api_url'))
+            config_url = job_api.url + '/config'
+            job_url = job_api.url + '/jobs'
+            core.CfnOutput(self, "API_URL", value=config_url)
+            ssm.StringParameter(self, str(stack_name + '-api-url-ssm'), string_value=config_url, parameter_name=str(stack_name + '_api_url'))
 
             core.CfnOutput(self, "API_KEY", value=api_key_value)
             ssm.StringParameter(self, id=str(stack_name + "-api-key-ssm"), string_value=api_key_value, parameter_name=str(stack_name + '_api_key'))
 
-            core.CfnOutput(self, "JOB_URL", value=job_api_jobs.url)
-            ssm.StringParameter(self, id=str(stack_name + "_job_url"), string_value=job_api_jobs.url, parameter_name=str(stack_name + '_job_url'))
+            core.CfnOutput(self, "JOB_URL", value=job_url)
+            ssm.StringParameter(self, id=str(stack_name + "_job_url"), string_value=job_url, parameter_name=str(stack_name + '_job_url'))
 
             ssm.StringParameter(self, id=str(stack_name + "_enable_dashboard"), string_value=enable_dashboard, parameter_name=str(stack_name + '_enable_dashboard'))
 
@@ -343,7 +343,7 @@ class Queues(core.Stack):
             dynamo_stream_lambda = _lambda.Function(self, str('lambda-' + queue['queue_name']),
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="dynamo-stream-lambda.lambda_handler",
-                code=_lambda.Code.asset('2-dynamo-stream-lambda'),
+                code=_lambda.Code.from_asset('2-dynamo-stream-lambda'),
                 role=dynamo_stream_lambda_role,
                 memory_size=1024,
                 timeout=core.Duration.seconds(180),
@@ -385,7 +385,7 @@ class Queues(core.Stack):
             dynamo_to_logs_lambda = _lambda.Function(self, str('lambda-logs-' + queue['queue_name']),
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="dynamo-to-logs-lambda.lambda_handler",
-                code=_lambda.Code.asset('10-dynamo-to-logs-lambda'),
+                code=_lambda.Code.from_asset('10-dynamo-to-logs-lambda'),
                 role=dynamo_stream_lambda_role,
                 memory_size=1024,
                 timeout=core.Duration.seconds(180),
@@ -418,7 +418,7 @@ class Queues(core.Stack):
                 dynamo_to_es_lambda = _lambda.Function(self, str('lambda_dynamo_es-' + queue['queue_name']),
                     runtime=_lambda.Runtime.PYTHON_3_8,
                     handler="dynamo-to-es.lambda_handler",
-                    code=_lambda.Code.asset('6-dynamo-to-elasticsearch'),
+                    code=_lambda.Code.from_asset('6-dynamo-to-elasticsearch'),
                     role=dynamo_stream_lambda_role,
                     memory_size=1024,
                     timeout=core.Duration.seconds(180),

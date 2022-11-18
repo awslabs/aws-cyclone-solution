@@ -12,9 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
+import aws_cdk as core
 from aws_cdk import (
-    core,
     aws_lambda as _lambda,
     aws_batch as batch,
     aws_ec2 as ec2,
@@ -25,7 +24,8 @@ from aws_cdk import (
     aws_s3_deployment as s3deploy,
     aws_ssm as ssm
     )
-
+import aws_cdk.aws_batch_alpha as batch
+from constructs import Construct
 from aws_cdk.custom_resources import Provider
 
 import os
@@ -47,7 +47,7 @@ cluster_config = get_config("./hyper_batch/configuration/clusters.json")
 cluster_config = cluster_config['clusters']
 class Clusters(core.Stack):
 
-    def __init__(self, scope: core.Construct, id: str, *, stack_name: str=None, main_region: str=None, is_main_region: str=None, import_vpc: str=None, cidr: str=None, vpc_id: str=None, peer_with_main_region: str=None, deploy_vpc_endpoints: str=None, subnet_config: str=None, nat_gateways: int=None, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, *, stack_name: str=None, main_region: str=None, is_main_region: str=None, import_vpc: str=None, cidr: str=None, vpc_id: str=None, peer_with_main_region: str=None, deploy_vpc_endpoints: str=None, subnet_config: str=None, nat_gateways: int=None, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         #create all iam roles here in main region and import them to other stacks to manage destroying stacks without failing dependendencies and creation of stacks not failing due to missing role for import
@@ -256,7 +256,7 @@ class Clusters(core.Stack):
             vpc_peering_lambda = _lambda.Function(self, str(stack_name + 'vpc-peering-lambda'),
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="vpc-peering-lambda.lambda_handler",
-                code=_lambda.Code.asset('12-vpc-peering-lambda'),
+                code=_lambda.Code.from_asset('12-vpc-peering-lambda'),
                 role=vpc_peering_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
@@ -312,7 +312,7 @@ class Clusters(core.Stack):
             kinesis_batch_lambda = _lambda.Function(self, str(stack_name + cluster['clusterName'] + '-lambda'),
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="kinesis-batch-lambda.lambda_handler",
-                code=_lambda.Code.asset('3-kinesis-batch-lambda'),
+                code=_lambda.Code.from_asset('3-kinesis-batch-lambda'),
                 role=kinesis_batch_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
