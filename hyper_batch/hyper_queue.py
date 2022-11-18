@@ -283,8 +283,8 @@ class Queues(core.Stack):
                 )
                 ]
             )
-            config_url = job_api.url + '/config'
-            job_url = job_api.url + '/jobs'
+            config_url = job_api.url + 'config'
+            job_url = job_api.url + 'jobs'
             core.CfnOutput(self, "API_URL", value=config_url)
             ssm.StringParameter(self, str(stack_name + '-api-url-ssm'), string_value=config_url, parameter_name=str(stack_name + '_api_url'))
 
