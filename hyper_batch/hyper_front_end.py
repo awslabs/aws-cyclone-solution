@@ -40,7 +40,7 @@ def get_config(json_dir):
             config = json.load(json_file)
             return config
 
-settings = get_config("./hyper_batch/configuration/settings.json")
+settings = get_config("./hyper_batch/configuration/settings.json").get('stack_settings', None)
 
 def check_api_exists(main_region, stack_name):
     ssm_client = boto3.client('ssm', region_name=main_region)
@@ -129,7 +129,7 @@ class HyperFrontEnd(core.Stack):
         )
 
         #Backup tables
-        vault = backup.BackupVault(self, str(stack_name +'-backup-vault'), backup_vault_name=str(stack_name +'-backup-vault'), removal_policy=core.RemovalPolicy.DESTROY)
+        vault = backup.BackupVault(self, str(stack_name +'-backup-vault'), backup_vault_name=str(stack_name +'-backup-vault'), removal_policy=core.RemovalPolicy.RETAIN)
         plan = backup.BackupPlan.daily35_day_retention(self, str(stack_name +'-backup-tables'), backup_vault=vault)
 
         plan.add_selection("Selection",
@@ -222,10 +222,11 @@ class HyperFrontEnd(core.Stack):
             api_config_lambda.add_environment("STACK_NAME", stack_name)
 
             private_api = settings.get('private_api', 'False')
+            print('PRIVATE API ENDPOINT: ' + private_api)
 
             if private_api == 'True':
-
-                self.secure_private_api_01_sec_grp = ec2.SecurityGroup(
+                print('Deploying private api')
+                secure_private_api_01_sec_grp = ec2.SecurityGroup(
                     self,
                     "secureApi01SecurityGroup",
                     vpc=vpc,
@@ -234,7 +235,7 @@ class HyperFrontEnd(core.Stack):
                 )
 
                 # Allow 443 inbound on our Security Group
-                self.secure_private_api_01_sec_grp.add_ingress_rule(
+                secure_private_api_01_sec_grp.add_ingress_rule(
                     ec2.Peer.ipv4(vpc.vpc_cidr_block),
                     ec2.Port.tcp(443)
                 )
@@ -244,35 +245,35 @@ class HyperFrontEnd(core.Stack):
                     "secureApi01Endpoint",
                     vpc=vpc,
                     service=ec2.InterfaceVpcEndpointAwsService.APIGATEWAY,
-                    private_dns_enabled=True,
-                    subnets=ec2.SubnetSelection(
-                        subnet_type=ec2.SubnetType.ISOLATED
-                    )
+                    private_dns_enabled=True
+                 #   subnets=ec2.SubnetSelection(
+                 #       subnet_type=ec2.SubnetType.PRIVATE_ISOLATED
+                #    )
                 )
 
                 # Create a API Gateway Resource Policy to attach to API GW
                 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html#cfn-apigateway-restapi-policy
                 secure_private_api_01_res_policy = iam.PolicyDocument(
                     statements=[
+                    #    iam.PolicyStatement(
+                    #        principals=[iam.AnyPrincipal()],
+                   #         actions=["execute-api:Invoke"],
+                            # resources=[f"{api_01.arn_for_execute_api(method="GET",path="greeter", stage="miztiik")}"],
+                   #         resources=[core.Fn.join("", ["execute-api:/", "*"])],
+                    #        effect=iam.Effect.DENY,
+                    #        conditions={
+                    #            "StringNotEquals":
+                   #             {
+                   #                 "aws:sourceVpc": f"{secure_private_api_01_endpoint.vpc_endpoint_id}"
+                   #             }
+                   #         },
+                   #         sid="DenyAllNonVPCAccessToApi"
+                   #     ),
                         iam.PolicyStatement(
                             principals=[iam.AnyPrincipal()],
                             actions=["execute-api:Invoke"],
-                            # resources=[f"{api_01.arn_for_execute_api(method="GET",path="greeter", stage="miztiik")}"],
                             resources=[core.Fn.join("", ["execute-api:/", "*"])],
-                            effect=_iam.Effect.DENY,
-                            conditions={
-                                "StringNotEquals":
-                                {
-                                    "aws:sourceVpc": f"{secure_private_api_01_endpoint.vpc_endpoint_id}"
-                                }
-                            },
-                            sid="DenyAllNonVPCAccessToApi"
-                        ),
-                        iam.PolicyStatement(
-                            principals=[_iam.AnyPrincipal()],
-                            actions=["execute-api:Invoke"],
-                            resources=[core.Fn.join("", ["execute-api:/", "*"])],
-                            effect=_iam.Effect.ALLOW,
+                            effect=iam.Effect.ALLOW,
                             sid="AllowVPCAccessToApi"
                         )
                     ]
