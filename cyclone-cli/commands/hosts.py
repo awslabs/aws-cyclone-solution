@@ -431,8 +431,9 @@ def update_host(ctx, name, account, region):
 @click.option('--region', required=True, default=get_region(), prompt='Region to deploy host to', callback=get_vpcs, help='AWS region to deploy host to, e.g. eu-west-1')
 @click.option('--vpc', required=True, default='', prompt='If creating vpc specify cidr range to use or specify a vpc-id to import existing vpc (recommended) e.g 10.0.0.0/16 OR vpc-xxxx', help='Import or create a vpc to use by specifying either a cidr or vpc-id (e.g 10.0.0.0/16 OR vpc-xxxx)')
 @click.option('--enable-dashboard', required=True, type=click.Choice(['True','False'], case_sensitive=False), prompt='[True/False] Deploy Kibana+ElasticSearch with worker & job log ingestion', help='[True/False] Deploy Kibana + ElasticSearch Cluster and data ingestion Lambdas that push all job and worker state changes to cluster. This will create a continuos cost for having solution deployed outside usage')
+@click.option('--private-api', required=True, type=click.Choice(['True','False'], case_sensitive=False), prompt='[True/False] Deploy private api accessible only from VPC', help='[True/False] Deploy private api accessible only from VPC. Public APi is still secured with API KEY')
 @click.option('--auto-init-main',required=False, default='True', type=click.Choice(['True','False'], case_sensitive=False), help='Default [True] - Automatically initialize main region when host is created, put False only if you want to use a different vpc in main region and configure this after host creation with init-main-region command')
-def create_host_with_cdk(ctx, name, account, region, enable_dashboard, vpc, auto_init_main):
+def create_host_with_cdk(ctx, name, account, region, enable_dashboard, vpc, private_api, auto_init_main):
     """Create a new host and start configuring your clusters, queues, task definitions & images. After that you can start running jobs with qsub command"""
     res = subprocess.run('docker info', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     if not res.returncode == 0:
@@ -463,7 +464,8 @@ def create_host_with_cdk(ctx, name, account, region, enable_dashboard, vpc, auto
                         {
                             "stack_name": name,
                             "account": account,
-                            "enable_dashboard": enable_dashboard
+                            "enable_dashboard": enable_dashboard,
+                            "private_api": private_api
                         }
                 }
 
