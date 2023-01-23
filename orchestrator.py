@@ -330,7 +330,7 @@ def scan_definitions():
 
     dynamo_jobDefinitions = ddb_response['Items']
     while "LastEvaluatedKey" in ddb_response:
-        ddb_response = dynamo.scan(ExclusiveStartKey=ddb_response["LastEvaluatedKey"])
+        ddb_response = dynamo.scan(TableName=stack_name + '_jobDefinitions_table', ExclusiveStartKey=ddb_response["LastEvaluatedKey"])
         dynamo_jobDefinitions.extend(ddb_response["Items"])
 
     logger.info('## CHECK JOB DEFINITIONS : ' + jsonpickle.encode(dynamo_jobDefinitions))
