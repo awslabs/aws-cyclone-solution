@@ -244,11 +244,15 @@ with open("./hyper_batch/configuration/images.json", 'w') as outfile:
         json.dump(images, outfile)
 
 def scan_regions():
-    dynamo_regions = dynamo.scan(
+    ddb_response = dynamo.scan(
         TableName=stack_name + '_regions_table',
     )
 
-    dynamo_regions = dynamo_regions['Items']
+    dynamo_regions = ddb_response['Items']
+
+    while "LastEvaluatedKey" in ddb_response:
+        ddb_response = dynamo.scan(TableName=stack_name + '_regions_table', ExclusiveStartKey=ddb_response["LastEvaluatedKey"])
+        dynamo_regions.extend(ddb_response["Items"])
     logger.info('## CHECK REGIONS : ' + jsonpickle.encode(dynamo_regions))
 
 
@@ -284,11 +288,15 @@ def scan_regions():
     return dynamo_regions, regions
 
 def scan_clusters():
-    dynamo_clusters = dynamo.scan(
+    ddb_response = dynamo.scan(
         TableName=stack_name + '_clusters_table',
     )
 
-    dynamo_clusters = dynamo_clusters['Items']
+    dynamo_clusters = ddb_response['Items']
+    while "LastEvaluatedKey" in ddb_response:
+        ddb_response = dynamo.scan(TableName=stack_name + '_clusters_table', ExclusiveStartKey=ddb_response["LastEvaluatedKey"])
+        dynamo_clusters.extend(ddb_response["Items"])
+
 
     logger.info('## CHECK CLUSTERS : ' + jsonpickle.encode(dynamo_clusters))
 
@@ -384,11 +392,15 @@ def scan_definitions():
     return dynamo_jobDefinitions, jobDefinitions
 
 def scan_queues():
-    dynamo_queues = dynamo.scan(
+    ddb_response = dynamo.scan(
         TableName=stack_name + '_queues_table',
     )
 
-    dynamo_queues = dynamo_queues['Items']
+    dynamo_queues = ddb_response['Items']
+
+    while "LastEvaluatedKey" in ddb_response:
+        ddb_response = dynamo.scan(TableName=stack_name + '_queues_table', ExclusiveStartKey=ddb_response["LastEvaluatedKey"])
+        dynamo_queues.extend(ddb_response["Items"])
 
     logger.info('## CHECK QUEUES : ' + jsonpickle.encode(dynamo_queues))
 
@@ -427,11 +439,16 @@ def scan_images():
 
     result, status = do_work(['aws s3 sync s3://{}-images-{}/images ./hyper_batch/configuration/images'.format(stack_name, region)])
 
-    dynamo_images = dynamo.scan(
+    ddb_response = dynamo.scan(
         TableName=stack_name + '_images_table',
     )
 
-    dynamo_images = dynamo_images['Items']
+    dynamo_images = ddb_response['Items']
+
+    while "LastEvaluatedKey" in ddb_response:
+        ddb_response = dynamo.scan(TableName=stack_name + '_images_table', ExclusiveStartKey=ddb_response["LastEvaluatedKey"])
+        dynamo_images.extend(ddb_response["Items"])
+
 
     logger.info('## CHECK IMAGES : ' + jsonpickle.encode(dynamo_images))
     
