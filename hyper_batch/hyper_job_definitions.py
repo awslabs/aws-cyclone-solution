@@ -235,7 +235,7 @@ class JobDefinitions(core.Stack):
             if is_main_region == 'True':
                     
                 # SQS queue for downstream processing
-                queue = sqs.Queue(self, str(job_definition['jobDefinitionName'] + '-q'), queue_name=job_definition['jobDefinitionName'])
+                queue = sqs.Queue(self, str(job_definition['jobDefinitionName'] + '-q'), queue_name=job_definition['jobDefinitionName'], retention_period=core.Duration.days(14))
                 core.Tags.of(queue).add(key='jobs_to_workers_ratio', value=str(job_definition['jobs_to_workers_ratio']))
                 sqs_arns.append(queue.queue_arn)
         
