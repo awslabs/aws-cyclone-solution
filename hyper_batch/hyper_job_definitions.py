@@ -146,7 +146,7 @@ class JobDefinitions(core.Stack):
                 print(f'ERROR: log configs could not be interpreted' )
 
             try:
-                if 'linux_parameters' in job_definitions:
+                if 'linux_parameters' in job_definition:
                     print(job_definition['linux_parameters'])
                     linux_parameters = ecs.LinuxParameters(self, str(job_definition['jobDefinitionName'] + '-LinuxParams'),
                         init_process_enabled=bool_convert(job_definition['linux_parameters']['init_process_enabled']),
