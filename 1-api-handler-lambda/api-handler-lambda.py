@@ -22,6 +22,7 @@ import jsonpickle
 import uuid
 from datetime import datetime
 import decimal
+from botocore.exceptions import ClientError
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", logging.ERROR)
 logger = logging.getLogger()
