@@ -11,9 +11,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import aws_cdk as core
 from aws_cdk import (
-    core,
     aws_lambda as _lambda,
     aws_dynamodb as dynamodb,
     aws_logs as logs,
@@ -29,11 +28,19 @@ from aws_cdk import (
     aws_backup as backup,
     aws_autoscaling as autoscaling
     )
-
+from constructs import Construct
 import os
 import subprocess
 import boto3
 import secrets
+import json
+
+def get_config(json_dir):
+        with open(json_dir,"r") as json_file:
+            config = json.load(json_file)
+            return config
+
+settings = get_config("./hyper_batch/configuration/settings.json").get('stack_settings', None)
 
 def check_api_exists(main_region, stack_name):
     ssm_client = boto3.client('ssm', region_name=main_region)
@@ -67,7 +74,7 @@ def check_api_exists(main_region, stack_name):
 
 class HyperFrontEnd(core.Stack):
 
-  def __init__(self, scope: core.Construct, id: str, *, account: str=None, stack_name: str=None, enable_dashboard: str=None, import_vpc: str=None, vpc_id: str=None, cidr: str=None, **kwargs) -> None:
+  def __init__(self, scope: Construct, id: str, *, account: str=None, stack_name: str=None, enable_dashboard: str=None, import_vpc: str=None, vpc_id: str=None, cidr: str=None, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # DynamoDB Tables
@@ -122,7 +129,7 @@ class HyperFrontEnd(core.Stack):
         )
 
         #Backup tables
-        vault = backup.BackupVault(self, str(stack_name +'-backup-vault'), backup_vault_name=str(stack_name +'-backup-vault'), removal_policy=core.RemovalPolicy.DESTROY)
+        vault = backup.BackupVault(self, str(stack_name +'-backup-vault'), backup_vault_name=str(stack_name +'-backup-vault'), removal_policy=core.RemovalPolicy.RETAIN)
         plan = backup.BackupPlan.daily35_day_retention(self, str(stack_name +'-backup-tables'), backup_vault=vault)
 
         plan.add_selection("Selection",
@@ -136,6 +143,15 @@ class HyperFrontEnd(core.Stack):
         )
 
         deployed, api_key_value = check_api_exists(self.region, stack_name)
+
+        if import_vpc == 'False':
+            vpc = ec2.Vpc(self, id='hyper_batch_vpc', cidr=cidr)
+        else:
+            vpc = ec2.Vpc.from_lookup(self, id='hyper_batch_vpc', vpc_id=vpc_id)   #this fails due to credentials so cannot import vpc
+        
+        core.Tags.of(vpc).add(key=stack_name, value=self.region)
+
+
         if not deployed:
 
             ############ Job handling API via API Gateway
@@ -187,7 +203,7 @@ class HyperFrontEnd(core.Stack):
             api_handler_lambda = _lambda.Function(self, str(stack_name +'ApiHandlerLambda'),
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="api-handler-lambda.lambda_handler",
-                code=_lambda.Code.asset('1-api-handler-lambda'),
+                code=_lambda.Code.from_asset('1-api-handler-lambda'),
                 role=api_handler_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
@@ -197,7 +213,7 @@ class HyperFrontEnd(core.Stack):
             api_config_lambda = _lambda.Function(self, str(stack_name +'ApiConfigLambda'),
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="api-config-lambda.lambda_handler",
-                code=_lambda.Code.asset('13-api-config-lambda'),
+                code=_lambda.Code.from_asset('13-api-config-lambda'),
                 role=api_handler_lambda_role,
                 timeout=core.Duration.seconds(180),
                 layers=[lambda_layer],
@@ -205,25 +221,110 @@ class HyperFrontEnd(core.Stack):
             )
             api_config_lambda.add_environment("STACK_NAME", stack_name)
 
-            job_api = apigateway.LambdaRestApi(self, str(stack_name +'-job-api'),
-                handler=api_config_lambda,
-                api_key_source_type=apigateway.ApiKeySourceType.HEADER,
-                deploy_options={
-                "logging_level": apigateway.MethodLoggingLevel.ERROR,
-                "data_trace_enabled": False,
-                "access_log_destination": apigateway.LogGroupLogDestination(logs.LogGroup(self, str(stack_name +'-logs-api'), retention=logs.RetentionDays('TWO_MONTHS'))),
-                "access_log_format": apigateway.AccessLogFormat.json_with_standard_fields(
-                        caller=True,
-                        http_method=True,
-                        ip=True,
-                        protocol=True,
-                        request_time=True,
-                        resource_path=True,
-                        response_length=True,
-                        status=True,
-                        user=True
-                    )}
-            )
+            private_api = settings.get('private_api', 'False')
+            print('PRIVATE API ENDPOINT: ' + private_api)
+
+            if private_api == 'True':
+                print('Deploying private api')
+                secure_private_api_01_sec_grp = ec2.SecurityGroup(
+                    self,
+                    "secureApi01SecurityGroup",
+                    vpc=vpc,
+                    allow_all_outbound=True,
+                    description="Miztiik Automation: Secure our private API using security groups"
+                )
+
+                # Allow 443 inbound on our Security Group
+                secure_private_api_01_sec_grp.add_ingress_rule(
+                    ec2.Peer.ipv4(vpc.vpc_cidr_block),
+                    ec2.Port.tcp(443)
+                )
+
+                secure_private_api_01_endpoint = ec2.InterfaceVpcEndpoint(
+                    self,
+                    "secureApi01Endpoint",
+                    vpc=vpc,
+                    service=ec2.InterfaceVpcEndpointAwsService.APIGATEWAY,
+                    private_dns_enabled=True
+                 #   subnets=ec2.SubnetSelection(
+                 #       subnet_type=ec2.SubnetType.PRIVATE_ISOLATED
+                #    )
+                )
+
+                # Create a API Gateway Resource Policy to attach to API GW
+                # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html#cfn-apigateway-restapi-policy
+                secure_private_api_01_res_policy = iam.PolicyDocument(
+                    statements=[
+                    #    iam.PolicyStatement(
+                    #        principals=[iam.AnyPrincipal()],
+                   #         actions=["execute-api:Invoke"],
+                            # resources=[f"{api_01.arn_for_execute_api(method="GET",path="greeter", stage="miztiik")}"],
+                   #         resources=[core.Fn.join("", ["execute-api:/", "*"])],
+                    #        effect=iam.Effect.DENY,
+                    #        conditions={
+                    #            "StringNotEquals":
+                   #             {
+                   #                 "aws:sourceVpc": f"{secure_private_api_01_endpoint.vpc_endpoint_id}"
+                   #             }
+                   #         },
+                   #         sid="DenyAllNonVPCAccessToApi"
+                   #     ),
+                        iam.PolicyStatement(
+                            principals=[iam.AnyPrincipal()],
+                            actions=["execute-api:Invoke"],
+                            resources=[core.Fn.join("", ["execute-api:/", "*"])],
+                            effect=iam.Effect.ALLOW,
+                            sid="AllowVPCAccessToApi"
+                        )
+                    ]
+                )
+
+
+                job_api = apigateway.LambdaRestApi(self, str(stack_name +'-job-api'),
+                    handler=api_config_lambda,
+                    endpoint_types=[
+                        apigateway.EndpointType.PRIVATE
+                    ],
+                    policy=secure_private_api_01_res_policy,
+                    api_key_source_type=apigateway.ApiKeySourceType.HEADER,
+                    deploy_options={
+                    "logging_level": apigateway.MethodLoggingLevel.ERROR,
+                    "data_trace_enabled": False,
+                    "access_log_destination": apigateway.LogGroupLogDestination(logs.LogGroup(self, str(stack_name +'-logs-api'), retention=logs.RetentionDays('TWO_MONTHS'))),
+                    "access_log_format": apigateway.AccessLogFormat.json_with_standard_fields(
+                            caller=True,
+                            http_method=True,
+                            ip=True,
+                            protocol=True,
+                            request_time=True,
+                            resource_path=True,
+                            response_length=True,
+                            status=True,
+                            user=True
+                        )}
+                )
+            
+            else:
+
+                job_api = apigateway.LambdaRestApi(self, str(stack_name +'-job-api'),
+                    handler=api_config_lambda,
+                    api_key_source_type=apigateway.ApiKeySourceType.HEADER,
+                    deploy_options={
+                    "logging_level": apigateway.MethodLoggingLevel.ERROR,
+                    "data_trace_enabled": False,
+                    "access_log_destination": apigateway.LogGroupLogDestination(logs.LogGroup(self, str(stack_name +'-logs-api'), retention=logs.RetentionDays('TWO_MONTHS'))),
+                    "access_log_format": apigateway.AccessLogFormat.json_with_standard_fields(
+                            caller=True,
+                            http_method=True,
+                            ip=True,
+                            protocol=True,
+                            request_time=True,
+                            resource_path=True,
+                            response_length=True,
+                            status=True,
+                            user=True
+                        )}
+                )
             
             job_api_jobs = job_api.root.add_resource("jobs")
             job_integration = apigateway.LambdaIntegration(api_handler_lambda)
@@ -254,16 +355,16 @@ class HyperFrontEnd(core.Stack):
                 )
                 ]
             )
-
-
-            core.CfnOutput(self, "API_URL", value=job_api_config.url)
-            ssm.StringParameter(self, str(stack_name + '-api-url-ssm'), string_value=job_api_config.url, parameter_name=str(stack_name + '_api_url'))
+            config_url = job_api.url + 'config'
+            job_url = job_api.url + 'jobs'
+            core.CfnOutput(self, "API_URL", value=config_url)
+            ssm.StringParameter(self, str(stack_name + '-api-url-ssm'), string_value=config_url, parameter_name=str(stack_name + '_api_url'))
 
             core.CfnOutput(self, "API_KEY", value=api_key_value)
             ssm.StringParameter(self, id=str(stack_name + "-api-key-ssm"), string_value=api_key_value, parameter_name=str(stack_name + '_api_key'))
 
-            core.CfnOutput(self, "JOB_URL", value=job_api_jobs.url)
-            ssm.StringParameter(self, id=str(stack_name + "_job_url"), string_value=job_api_jobs.url, parameter_name=str(stack_name + '_job_url'))
+            core.CfnOutput(self, "JOB_URL", value=job_url)
+            ssm.StringParameter(self, id=str(stack_name + "_job_url"), string_value=job_url, parameter_name=str(stack_name + '_job_url'))
 
             ssm.StringParameter(self, id=str(stack_name + "_enable_dashboard"), string_value=enable_dashboard, parameter_name=str(stack_name + '_enable_dashboard'))
 
@@ -285,12 +386,6 @@ class HyperFrontEnd(core.Stack):
                 destination_key_prefix='images/'
             )
 
-        if import_vpc == 'False':
-            vpc = ec2.Vpc(self, id='hyper_batch_vpc', cidr=cidr)
-        else:
-            vpc = ec2.Vpc.from_lookup(self, id='hyper_batch_vpc', vpc_id=vpc_id)   #this fails due to credentials so cannot import vpc
-        
-        core.Tags.of(vpc).add(key=stack_name, value=self.region)
 
         cluster = ecs.Cluster(self, str(stack_name +'-ECSCluster'), cluster_name= stack_name+'-orch-cluster', vpc=vpc, container_insights=True)
         cluster.apply_removal_policy(core.RemovalPolicy.DESTROY)

@@ -12,8 +12,9 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
-from aws_cdk import core
+from constructs import Construct
+#from aws_cdk import App, Stack
+import aws_cdk as core
 from hyper_batch.hyper_front_end import HyperFrontEnd
 from hyper_batch.hyper_batch_core import HyperBatchCore
 from hyper_batch.hyper_clusters import Clusters

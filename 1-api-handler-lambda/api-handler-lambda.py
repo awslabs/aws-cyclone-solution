@@ -190,7 +190,7 @@ def lambda_handler(event, context):
                                 'Content-Type': 'application/json',
                             },
                         }
-            except ClientError as e:
+            except Exception as e:
                 logger.exception("Couldn't load data into table %s.", dynamo.name)
                 return {
                         'statusCode': '400',
