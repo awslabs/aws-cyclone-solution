@@ -12,3 +12,7 @@
 /scripts/
 /host_credentials/
 /hyper_batch/__pycache__/
+/host_credentials/*
+*.egg-info/
+*.egg
+*.pyc
