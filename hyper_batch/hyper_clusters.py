@@ -422,7 +422,8 @@ class Clusters(core.Stack):
 
             if not cluster['max_vCPUs'] == 0:
                 max_vCPUs = ceil(cluster['max_vCPUs'] / cluster['compute_envs'])
-
+            else:
+                max_vCPUs = 0
 
             for i in range(1, int(cluster['compute_envs']), 1):
                 CE_name = batch.ComputeEnvironment(self, id=stack_name + '-' + cluster['clusterName'] + '-' + str(i),
