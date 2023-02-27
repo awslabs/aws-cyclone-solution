@@ -172,7 +172,7 @@ def update_cluster(obj, name, instance_list, max_vcpus, compute_envs, bid_percen
     if not max_vcpus == None:
         params_old['max_vCPUs'] = max_vcpus
     if not compute_envs == None:
-        params_old['compute_envs'] = compute_envs,
+        params_old['compute_envs'] = compute_envs
     if not allocation_strategy == None:
         params_old['allocation_strategy'] = allocation_strategy
     if not bid_percentage == None:
