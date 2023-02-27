@@ -425,7 +425,7 @@ class Clusters(core.Stack):
             else:
                 max_vCPUs = 0
 
-            for i in range(1, int(cluster['compute_envs']), 1):
+            for i in range(0, int(cluster['compute_envs']), 1):
                 CE_name = batch.ComputeEnvironment(self, id=stack_name + '-' + cluster['clusterName'] + '-' + str(i),
                     compute_resources={
                         "type": batch.ComputeResourceType(cluster['type']),
@@ -445,7 +445,7 @@ class Clusters(core.Stack):
                     # Defines a collection of compute resources to handle assigned batch jobs
                     compute_environment=CE_name,
                     # Order determines the allocation order for jobs (i.e. Lower means higher preferance for job assignment)
-                    order=i
+                    order=i + 1
                 )
                 envs.append(ENV_name)
 
