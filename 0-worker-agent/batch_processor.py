@@ -201,13 +201,13 @@ def main():
             'jobDefinition': {
                 'S':jobDefinition},
             'cpu_arch': {
-                'S': info.get('arch')},
+                'S': info.get('arch', 'null')},
             'cpu_count': {
-                'S': str(info.get('count')) if 'count' in info else None},
+                'S': str(info.get('count'), 'null') if 'count' in info else None},
             'cpu_brand': {
-                'S':info.get('brand_raw')},
+                'S':info.get('brand_raw', 'null')},
             'cpu_Hz': {
-                'S':info.get('hz_advertised_friendly')},
+                'S':info.get('hz_advertised_friendly', 'null')},
             'mem_total_gb': {
                 'S':str(mem_info['total']/1000000000) or None},
             'mem_available_gb': {
