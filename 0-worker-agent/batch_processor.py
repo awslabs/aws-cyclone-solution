@@ -203,7 +203,7 @@ def main():
             'cpu_arch': {
                 'S': info.get('arch')},
             'cpu_count': {
-                'S': str(info.get('count')},
+                'S': str(info.get('count')) if 'count' in info else None},
             'cpu_brand': {
                 'S':info.get('brand_raw')},
             'cpu_Hz': {
