@@ -196,6 +196,10 @@ def main():
                 'S':'null'},
             'CurrentTime': {
                 'S': datetime.now().isoformat()},
+            'hostname': {
+                'S': os.getenv("HOSTNAME", 'null')},
+            'aws_batch_job_id': {
+                'S': os.getenv("AWS_BATCH_JOB_ID", 'null')},
             'Status': {
                 'S':'null'},
             'jobDefinition': {
