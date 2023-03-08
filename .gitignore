@@ -10,9 +10,9 @@
 /.vscode
 /ec2-controler/
 /scripts/
-/host_credentials/
 /hyper_batch/__pycache__/
 /host_credentials/*
+!/host_credentials/.gitkeep
 *.egg-info/
 *.egg
 *.pyc
