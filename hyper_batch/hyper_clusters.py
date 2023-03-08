@@ -424,11 +424,18 @@ class Clusters(core.Stack):
                 )
             lt = batch.LaunchTemplateSpecification(launch_template_name=lt_raw.launch_template_name)
 
+            if cluster.get('compute_resources_tags'):
+                print(f"{cluster['clusterName']} tags:{cluster['compute_resources_tags']}")
+                compute_tags = cluster['compute_resources_tags']
+            else:
+                compute_tags = {}
+
             for i in range(1, 4, 1):
                 CE_name = batch.ComputeEnvironment(self, id=stack_name + '-' + cluster['clusterName'] + '-' + str(i),
                     compute_resources={
                         "type": batch.ComputeResourceType(cluster['type']),
                         "allocation_strategy": batch.AllocationStrategy(cluster['allocation_strategy']),
+                        "compute_resources_tags": compute_tags,
                         "instance_types": instance_types,
                         "launch_template": lt,
                         "image": image_object,
