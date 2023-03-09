@@ -7,6 +7,7 @@
             "bid_percentage": 100,
             "max_vCPUs": 1000,
             "iam_policies":[],
+            "compute_resources_tags": {},
             "main_region_image_name": null
         },
         {
@@ -17,6 +18,7 @@
             "bid_percentage": 100,
             "max_vCPUs": 1000,
             "iam_policies":[],
+            "compute_resources_tags": {"Environment": "Production", "CostCenter": "MachineLearning"},
             "main_region_image_name": null
         }
     ]

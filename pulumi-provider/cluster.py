@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import Sequence
+from typing import Any, Mapping, Sequence
 from pulumi import Input, Output
 from pulumi.dynamic import Resource, ResourceProvider, CreateResult, UpdateResult, DiffResult
 import requests
@@ -39,6 +39,7 @@ class CycloneClusterArgs(object):
     bid_percentage: Input[int]
     max_vCPUs: Input[int]
     iam_policies: Input[Sequence[str]]
+    compute_resources_tags: Input[Mapping[str, Any]]
     main_region_image_name: Input[str]
 
     def __init__(
@@ -50,6 +51,7 @@ class CycloneClusterArgs(object):
         bid_percentage: Input[int] = 100,
         max_vCPUs: Input[int] = 1000,
         iam_policies: Input[Sequence[str]] = [],
+        compute_resources_tags: Input[Mapping[str, Any]] = {},
         main_region_image_name: Input[str] = "",
     ):
         self.name = name
@@ -59,6 +61,7 @@ class CycloneClusterArgs(object):
         self.bid_percentage = bid_percentage
         self.max_vCPUs = max_vCPUs
         self.iam_policies = iam_policies
+        self.compute_resources_tags = compute_resources_tags
         self.main_region_image_name = main_region_image_name
 
 def cluster_to_props(incoming_prop):
@@ -182,6 +185,7 @@ class CycloneCluster(Resource):
     bid_percentage: Output[int]
     max_vCPUs: Output[int]
     iam_policies: Output[Sequence[str]]
+    compute_resources_tags: Output[Mapping[str, Any]]
     main_region_image_name: Output[str]
 
     def __init__(self, name, args: CycloneClusterArgs, opts=None):
