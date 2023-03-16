@@ -424,12 +424,20 @@ class Clusters(core.Stack):
                 max_vCPUs = ceil(cluster['max_vCPUs'] / cluster['compute_envs'])
             else:
                 max_vCPUs = 0
+                
+            if cluster.get('compute_resources_tags'):
+                print(f"{cluster['clusterName']} tags:{cluster['compute_resources_tags']}")
+                compute_tags = cluster['compute_resources_tags']
+            else:
+                compute_tags = {}
 
             for i in range(0, int(cluster['compute_envs']), 1):
+
                 CE_name = batch.ComputeEnvironment(self, id=stack_name + '-' + cluster['clusterName'] + '-' + str(i),
                     compute_resources={
                         "type": batch.ComputeResourceType(cluster['type']),
                         "allocation_strategy": batch.AllocationStrategy(cluster['allocation_strategy']),
+                        "compute_resources_tags": compute_tags,
                         "instance_types": instance_types,
                         "launch_template": lt,
                         "image": image_object,

@@ -100,8 +100,10 @@ def list_clusters(obj, name):
 @click.option('--bid-percentage', required=False, default=None, help='For SPOT only - Bid percentage of on-demand cost')
 @click.option('--allocation-strategy', required=False, default=None, type=click.Choice(['SPOT_CAPACITY_OPTIMIZED','BEST_FIT_PROGRESSIVE', 'BEST_FIT'], case_sensitive=False), help='Batch allocation strategy to use [BEST_FIT_PROGRESSIVE/BEST_FIT/SPOT_CAPACITY_OPTIMIZED')
 @click.option('--iam-policies', required=False, default=[], prompt='OPTIONAL Add IAM policies to instance role as list of strings e.g ["custom_policy"]', help='Add additional IAM policies to instance role in your cluster (policies needed by hyper batch are automatically added)')
+@click.option('--compute-resources-tags', type=(str, str), multiple=True, default={}, required=False, help='Assign tags for cluster, Repeat for multiple tags e.g "--compute-resources-tags TAGKEY1 TAGVALUE1 --compute-resources-tags TAGKEY2 TAGVALUE2".')
 @click.option('--main-region-image-name', required=False, default='', prompt='OPTIONAL Specify custom AMI name that exists in your main region to use for cluster', help='OPTIONAL Specify custom AMI name for an image that exists in your main region that you want to use for cluster. Cyclone will copy the image to any hub regions where it does not exist and use local versions')
-def add_cluster(obj, name, instance_list, max_vcpus, compute_envs, type, bid_percentage, allocation_strategy, iam_policies, main_region_image_name):
+
+def add_cluster(obj, name, instance_list, max_vcpus, compute_envs, type, bid_percentage, allocation_strategy, iam_policies, compute_resources_tags, main_region_image_name):
     """Add a cluster to your environment, clusters will span all enabled regions."""
     instance_list = str(instance_list).replace("'", '"')
     iam_policies = str(iam_policies).replace("'", '"')
@@ -123,6 +125,11 @@ def add_cluster(obj, name, instance_list, max_vcpus, compute_envs, type, bid_per
             bid_percentage = click.prompt('Choose spot bid percentage', default='100', show_default=True)
         if allocation_strategy == None:
             allocation_strategy = click.prompt('Choose spot allocation strategy', show_default=True, default='SPOT_CAPACITY_OPTIMIZED', type=click.Choice(['SPOT_CAPACITY_OPTIMIZED','BEST_FIT_PROGRESSIVE', 'BEST_FIT'], case_sensitive=False))
+    
+    compute_resources_tags_dict = {}
+    for item in compute_resources_tags:
+        k, v = item
+        compute_resources_tags_dict[k] = v
 
     cluster = {
         "name": name,
@@ -133,6 +140,7 @@ def add_cluster(obj, name, instance_list, max_vcpus, compute_envs, type, bid_per
         "max_vCPUs": max_vcpus,
         "compute_envs": compute_envs,
         "iam_policies": iam_policies,
+        "compute_resources_tags": json.dumps(compute_resources_tags_dict),
         "main_region_image_name": main_region_image_name,
         "Status": "Creating",
         "Output_Log": ''
@@ -159,8 +167,11 @@ def add_cluster(obj, name, instance_list, max_vcpus, compute_envs, type, bid_per
 @click.option('--bid-percentage', required=False, default=None, help='If import-vpc is True then specify the vpc-id to import')
 @click.option('--allocation-strategy', required=False, default=None, help='If set to True a peering connection is automatically create between hub region vpc and main region vpc for network communication')
 @click.option('--iam-policies', required=False, default=None, help='Add additional iam policies to instance role in your cluster e.g ["custom_policy"] (policies needed by hyper batch are automatically added)')
+@click.option('--compute-resources-tags', type=(str, str), multiple=True, default=None, required=False, help='Assign tags for cluster, Repeat for multiple tags e.g "--compute-resources-tags TAGKEY1 TAGVALUE1 --compute-resources-tags TAGKEY2 TAGVALUE2".')
 @click.option('--main-region-image-name', required=False, default=None, help='OPTIONAL Specify Image name for an image that exists in your main region that you want to use for cluster. Cyclone will copy the image to any hub regions where it does not exist and use local versions')
-def update_cluster(obj, name, instance_list, max_vcpus, compute_envs, bid_percentage, type, allocation_strategy, iam_policies, main_region_image_name):
+
+def update_cluster(obj, name, instance_list, max_vcpus, compute_envs, bid_percentage, type, allocation_strategy, iam_policies, compute_resources_tags, main_region_image_name):
+
     """Update specific configurations for an existing cluster"""
 
     params_old = get(obj.url, obj.key, obj.name +'_clusters_table', name)
@@ -179,6 +190,12 @@ def update_cluster(obj, name, instance_list, max_vcpus, compute_envs, bid_percen
         params_old['bid_percentage'] = bid_percentage
     if not iam_policies == None:
         params_old['iam_policies'] = iam_policies
+    if not len(compute_resources_tags) == 0:
+        compute_resources_tags_dict = {}
+        for item in compute_resources_tags:
+            k, v = item
+            compute_resources_tags_dict[k] = v
+        params_old['compute_resources_tags'] = json.dumps(compute_resources_tags_dict)
     if not main_region_image_name == None:
         params_old['main_region_image_name'] = main_region_image_name
     params_old['Status'] ='Updating'

@@ -11,6 +11,7 @@
             "max_vCPUs": 1000,
             "compute_envs": 3,
             "iam_policies": [],
+            "compute_resources_tags": {},
             "main_region_image_name": null
         },
         {
@@ -25,6 +26,7 @@
             "max_vCPUs": 1000,
             "compute_envs": 1,
             "iam_policies": [],
+            "compute_resources_tags": {"Environment": "Production", "CostCenter": "MachineLearning"},
             "main_region_image_name": null
         }
     ]
