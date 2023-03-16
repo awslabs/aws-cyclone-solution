@@ -95,13 +95,15 @@ def list_clusters(obj, name):
 @click.option('--name', required=True, prompt='Cluster name', help='Give cluster a name')
 @click.option('--instance-list', required=True, default=["optimal"], prompt='Instance types as list of strings e.g ["m5.large","c5.large"], default ["optimal"]', help='Instance types to use as a string list e.g ["m5.large","c5.large"], default is ["optimal"]')
 @click.option('--max-vCPUs', required=True, default='1000', show_default=True, prompt='Max vCPUs per region', help='Specify the maximum vCPUs per region, total max vCPUs will be regions enabled * max-vCPUs per region')
+@click.option('--compute-envs', required=False, default=3, show_default=True, prompt='Max Compute environments per cluster (max 3)', help='Amount of compute environments per cluster.. will divide max-vCPUs by compute-envs')
 @click.option('--type', required=True, default='SPOT', show_default=True, prompt='Choose [SPOT/ONDEMAND]', type=click.Choice(['SPOT','ONDEMAND'], case_sensitive=False),  help='Choose EC2 pricing plan [SPOT/ONDEMAND]')
 @click.option('--bid-percentage', required=False, default=None, help='For SPOT only - Bid percentage of on-demand cost')
 @click.option('--allocation-strategy', required=False, default=None, type=click.Choice(['SPOT_CAPACITY_OPTIMIZED','BEST_FIT_PROGRESSIVE', 'BEST_FIT'], case_sensitive=False), help='Batch allocation strategy to use [BEST_FIT_PROGRESSIVE/BEST_FIT/SPOT_CAPACITY_OPTIMIZED')
 @click.option('--iam-policies', required=False, default=[], prompt='OPTIONAL Add IAM policies to instance role as list of strings e.g ["custom_policy"]', help='Add additional IAM policies to instance role in your cluster (policies needed by hyper batch are automatically added)')
 @click.option('--compute-resources-tags', type=(str, str), multiple=True, default={}, required=False, help='Assign tags for cluster, Repeat for multiple tags e.g "--compute-resources-tags TAGKEY1 TAGVALUE1 --compute-resources-tags TAGKEY2 TAGVALUE2".')
 @click.option('--main-region-image-name', required=False, default='', prompt='OPTIONAL Specify custom AMI name that exists in your main region to use for cluster', help='OPTIONAL Specify custom AMI name for an image that exists in your main region that you want to use for cluster. Cyclone will copy the image to any hub regions where it does not exist and use local versions')
-def add_cluster(obj, name, instance_list, max_vcpus, type, bid_percentage, allocation_strategy, iam_policies, compute_resources_tags, main_region_image_name):
+
+def add_cluster(obj, name, instance_list, max_vcpus, compute_envs, type, bid_percentage, allocation_strategy, iam_policies, compute_resources_tags, main_region_image_name):
     """Add a cluster to your environment, clusters will span all enabled regions."""
     instance_list = str(instance_list).replace("'", '"')
     iam_policies = str(iam_policies).replace("'", '"')
@@ -136,6 +138,7 @@ def add_cluster(obj, name, instance_list, max_vcpus, type, bid_percentage, alloc
         "allocation_strategy": allocation_strategy,
         "bid_percentage": bid_percentage,
         "max_vCPUs": max_vcpus,
+        "compute_envs": compute_envs,
         "iam_policies": iam_policies,
         "compute_resources_tags": json.dumps(compute_resources_tags_dict),
         "main_region_image_name": main_region_image_name,
@@ -159,13 +162,16 @@ def add_cluster(obj, name, instance_list, max_vcpus, type, bid_percentage, alloc
 @click.option('--name', required=True, help='Choose cluster to update')
 @click.option('--instance-list', required=False, default=None, help='List instance types to use e.g "m5.xlarge c5.xlarge", you can also choose optimal')
 @click.option('--max-vCPUs', required=False, default=None, help='Specify the maximum vCPUs per region, total max vCPUs will be regions enabled * max-vCPUs per region')
+@click.option('--compute-envs', required=False, default=None, help='Amount of compute environments per cluster (max 3).. will divide max-vCPUs by compute-envs')
 @click.option('--type', required=False, default=None, help='Pricing option of spot or on-demand [SPOT/ON-DEMAND] ')
 @click.option('--bid-percentage', required=False, default=None, help='If import-vpc is True then specify the vpc-id to import')
 @click.option('--allocation-strategy', required=False, default=None, help='If set to True a peering connection is automatically create between hub region vpc and main region vpc for network communication')
 @click.option('--iam-policies', required=False, default=None, help='Add additional iam policies to instance role in your cluster e.g ["custom_policy"] (policies needed by hyper batch are automatically added)')
 @click.option('--compute-resources-tags', type=(str, str), multiple=True, default=None, required=False, help='Assign tags for cluster, Repeat for multiple tags e.g "--compute-resources-tags TAGKEY1 TAGVALUE1 --compute-resources-tags TAGKEY2 TAGVALUE2".')
 @click.option('--main-region-image-name', required=False, default=None, help='OPTIONAL Specify Image name for an image that exists in your main region that you want to use for cluster. Cyclone will copy the image to any hub regions where it does not exist and use local versions')
-def update_cluster(obj, name, instance_list, max_vcpus, bid_percentage, type, allocation_strategy, iam_policies, compute_resources_tags, main_region_image_name):
+
+def update_cluster(obj, name, instance_list, max_vcpus, compute_envs, bid_percentage, type, allocation_strategy, iam_policies, compute_resources_tags, main_region_image_name):
+
     """Update specific configurations for an existing cluster"""
 
     params_old = get(obj.url, obj.key, obj.name +'_clusters_table', name)
@@ -176,6 +182,8 @@ def update_cluster(obj, name, instance_list, max_vcpus, bid_percentage, type, al
         params_old['type'] = type
     if not max_vcpus == None:
         params_old['max_vCPUs'] = max_vcpus
+    if not compute_envs == None:
+        params_old['compute_envs'] = compute_envs
     if not allocation_strategy == None:
         params_old['allocation_strategy'] = allocation_strategy
     if not bid_percentage == None:
@@ -228,6 +236,3 @@ def delete_cluster(obj, name):
     click.echo('Status')
     click.echo(cluster['Status'])
     click.echo('')
-
-
-

@@ -38,6 +38,7 @@ class CycloneClusterArgs(object):
     allocation_strategy: Input[str]
     bid_percentage: Input[int]
     max_vCPUs: Input[int]
+    compute_envs: Input[int]
     iam_policies: Input[Sequence[str]]
     compute_resources_tags: Input[Mapping[str, Any]]
     main_region_image_name: Input[str]
@@ -50,6 +51,7 @@ class CycloneClusterArgs(object):
         allocation_strategy: Input[str] = "SPOT_CAPACITY_OPTIMIZED",
         bid_percentage: Input[int] = 100,
         max_vCPUs: Input[int] = 1000,
+        compute_envs: Input[int] = 3,
         iam_policies: Input[Sequence[str]] = [],
         compute_resources_tags: Input[Mapping[str, Any]] = {},
         main_region_image_name: Input[str] = "",
@@ -60,6 +62,7 @@ class CycloneClusterArgs(object):
         self.allocation_strategy = allocation_strategy
         self.bid_percentage = bid_percentage
         self.max_vCPUs = max_vCPUs
+        self.compute_envs = compute_envs
         self.iam_policies = iam_policies
         self.compute_resources_tags = compute_resources_tags
         self.main_region_image_name = main_region_image_name
@@ -184,6 +187,7 @@ class CycloneCluster(Resource):
     allocation_strategy: Output[str]
     bid_percentage: Output[int]
     max_vCPUs: Output[int]
+    compute_envs: Output[int]
     iam_policies: Output[Sequence[str]]
     compute_resources_tags: Output[Mapping[str, Any]]
     main_region_image_name: Output[str]

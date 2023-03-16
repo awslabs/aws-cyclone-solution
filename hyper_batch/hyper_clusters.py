@@ -27,6 +27,7 @@ from aws_cdk import (
 import aws_cdk.aws_batch_alpha as batch
 from constructs import Construct
 from aws_cdk.custom_resources import Provider
+from math import ceil
 
 import os
 import subprocess
@@ -356,11 +357,7 @@ class Clusters(core.Stack):
                 instance_types.append(instace_type)
 
             envs = []
-            if cluster['max_vCPUs'] == 0:
-                max_vCPUs = 0
-            else:
-                max_vCPUs = round(0.5 + cluster['max_vCPUs'] / 3)
-            
+           
             image_object = None
             if not cluster['main_region_image_name'] == None or cluster['main_region_image_name'] == '':
                 ec2_local = boto3.client('ec2', region_name=self.region)
@@ -417,20 +414,25 @@ class Clusters(core.Stack):
                     print('AMI copied and available to cyclone')
 
 
-
             lt_raw = ec2.CfnLaunchTemplate(self, stack_name + '-' + cluster['clusterName'] + '-' + 'lt',
                 launch_template_name=stack_name + '-' + cluster['clusterName'] + '-' + 'lt',
                 launch_template_data=ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(instance_type="t3.small")
                 )
             lt = batch.LaunchTemplateSpecification(launch_template_name=lt_raw.launch_template_name)
 
+            if not cluster['max_vCPUs'] == 0:
+                max_vCPUs = ceil(cluster['max_vCPUs'] / cluster['compute_envs'])
+            else:
+                max_vCPUs = 0
+                
             if cluster.get('compute_resources_tags'):
                 print(f"{cluster['clusterName']} tags:{cluster['compute_resources_tags']}")
                 compute_tags = cluster['compute_resources_tags']
             else:
                 compute_tags = {}
 
-            for i in range(1, 4, 1):
+            for i in range(0, int(cluster['compute_envs']), 1):
+
                 CE_name = batch.ComputeEnvironment(self, id=stack_name + '-' + cluster['clusterName'] + '-' + str(i),
                     compute_resources={
                         "type": batch.ComputeResourceType(cluster['type']),
@@ -441,7 +443,7 @@ class Clusters(core.Stack):
                         "image": image_object,
                         "bid_percentage": cluster['bid_percentage'], # Bids for resources at 75% of the on-demand price
                         "vpc": vpc,
-                        "maxv_cpus": int(cluster['max_vCPUs'] / 3),
+                        "maxv_cpus": max_vCPUs,
                         "instance_role": f'arn:aws:iam::{self.account}:instance-profile/{stack_name}-InstanceProfile'
                     },
                     service_role=batchServiceRole,
@@ -451,7 +453,7 @@ class Clusters(core.Stack):
                     # Defines a collection of compute resources to handle assigned batch jobs
                     compute_environment=CE_name,
                     # Order determines the allocation order for jobs (i.e. Lower means higher preferance for job assignment)
-                    order=i
+                    order=i + 1
                 )
                 envs.append(ENV_name)
 

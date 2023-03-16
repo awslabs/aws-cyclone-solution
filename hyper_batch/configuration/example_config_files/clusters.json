@@ -1,25 +1,33 @@
-{ "clusters":[
+{
+    "clusters": [
         {
             "clusterName": "sample-cluster-1",
-            "instance_list": ["optimal"],
+            "instance_list": [
+                "optimal"
+            ],
             "type": "SPOT",
             "allocation_strategy": "SPOT_CAPACITY_OPTIMIZED",
             "bid_percentage": 100,
             "max_vCPUs": 1000,
-            "iam_policies":[],
+            "compute_envs": 3,
+            "iam_policies": [],
             "compute_resources_tags": {},
             "main_region_image_name": null
         },
         {
             "clusterName": "sample-cluster-2",
-            "instance_list": ["m4.2xlarge", "m4.4xlarge"],
+            "instance_list": [
+                "m4.2xlarge",
+                "m4.4xlarge"
+            ],
             "type": "SPOT",
             "allocation_strategy": "SPOT_CAPACITY_OPTIMIZED",
             "bid_percentage": 100,
             "max_vCPUs": 1000,
-            "iam_policies":[],
+            "compute_envs": 1,
+            "iam_policies": [],
             "compute_resources_tags": {"Environment": "Production", "CostCenter": "MachineLearning"},
             "main_region_image_name": null
         }
     ]
-  }
+}
