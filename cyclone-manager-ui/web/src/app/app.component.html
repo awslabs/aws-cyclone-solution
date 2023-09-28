@@ -1,0 +1,78 @@
+<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow " color="primary">
+    <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 " [routerLink]="['/']">{{appName}}</a>
+    <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse"
+        data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <input class="form-control form-control-dark w-100 rounded-0 border-0" disabled type="text" placeholder="">
+</header>
+<div *ngIf="isLoading | async">
+    <mat-progress-bar mode="indeterminate">
+    </mat-progress-bar>
+</div>
+<div class="container-fluid">
+    <div class="row">
+        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3 sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <svg class="bi pe-none me-2" width="16" height="16">
+                            <use xlink:href="#home"></use>
+                        </svg>
+                        <a class="nav-link" aria-current="page" [routerLink]="['/jobs']">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M14 6V4h-4v2h4zM4 8v11h16V8H4zm16-2c1.11 0 2 .89 2 2v11c0 1.11-.89 2-2 2H4c-1.11 0-2-.89-2-2l.01-11c0-1.11.88-2 1.99-2h4V4c0-1.11.89-2 2-2h4c1.11 0 2 .89 2 2v2h4z"/></svg>
+                            Running Jobs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [routerLink]="['/regions']">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="4"><path d="M24 44c11.046 0 20-8.954 20-20S35.046 4 24 4S4 12.954 4 24s8.954 20 20 20Z"/><path d="M4 20.84c3.015-1.423 5.245-1.622 6.69-.595c2.167 1.54 2.438 7.819 7.368 4.819c4.929-3.001-2.111-4.224-.583-8.57c1.528-4.347 6.533-.97 7.03-5.731c.332-3.174-3.464-4.389-11.39-3.644"/><path stroke-linecap="round" d="M36 8c-5.714 4.989-7.71 8.001-5.987 9.037c2.584 1.555 3.68-.634 6.834 0c3.153.634 2.47 4.909.812 4.909c-1.659 0-10.249-1.094-9.816 3.919c.432 5.013 5.6 5.755 5.6 8.556c0 1.867-1.144 4.725-3.43 8.573M6.104 32.926a89.421 89.421 0 0 1 2.056-.874c3.847-1.554 6.702-1.92 8.564-1.099c3.292 1.453 2.026 4.387 3.058 5.468c1.03 1.081 3.606.767 3.606 2.823c0 1.371-.46 2.92-1.382 4.646"/></g></svg>
+                            Regions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [routerLink]="['/queues']">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M19.5 22.5L18 21l3-3l-3-3l1.5-1.5L24 18l-4.5 4.5ZM8 21v-2H4q-.825 0-1.413-.588T2 17V5q0-.825.588-1.413T4 3h16q.825 0 1.413.588T22 5v7h-2V5H4v12h13v2h-2v2H8Zm3-6h2v-3h3v-2h-3V7h-2v3H8v2h3v3Zm1-4Z" />
+                            </svg>
+                            Queues
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [routerLink]="['/clusters']">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 36 36">
+                                <path fill="currentColor"
+                                    d="M31.36 8H27.5v2H31v20h-3.5v2H33V9.67A1.65 1.65 0 0 0 31.36 8Z"
+                                    class="clr-i-outline clr-i-outline-path-1" />
+                                <path fill="currentColor" d="M5 10h3.5V8H4.64A1.65 1.65 0 0 0 3 9.67V32h5.5v-2H5Z"
+                                    class="clr-i-outline clr-i-outline-path-2" />
+                                <ellipse cx="18.01" cy="25.99" fill="currentColor"
+                                    class="clr-i-outline clr-i-outline-path-3" rx="1.8" ry="1.79" />
+                                <path fill="currentColor"
+                                    d="M24.32 4H11.68A1.68 1.68 0 0 0 10 5.68V32h16V5.68A1.68 1.68 0 0 0 24.32 4ZM24 30H12V6h12Z"
+                                    class="clr-i-outline clr-i-outline-path-4" />
+                                <path fill="currentColor" d="M13.5 9.21h9v1.6h-9z"
+                                    class="clr-i-outline clr-i-outline-path-5" />
+                                <path fill="none" d="M0 0h36v36H0z" />
+                            </svg>
+                            Clusters
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [routerLink]="['/definitions']">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32"><circle cx="14" cy="14" r="2" fill="currentColor"/><path fill="currentColor" d="M20 30a.997.997 0 0 1-.707-.293L8.586 19A2.013 2.013 0 0 1 8 17.586V10a2.002 2.002 0 0 1 2-2h7.586A1.986 1.986 0 0 1 19 8.586l10.707 10.707a1 1 0 0 1 0 1.414l-9 9A.997.997 0 0 1 20 30ZM10 10v7.586l10 10L27.586 20l-10-10Z"/><path fill="currentColor" d="M12 30H4a2.002 2.002 0 0 1-2-2V4a2.002 2.002 0 0 1 2-2h24a2.002 2.002 0 0 1 2 2v8h-2V4H4v24h8Z"/></svg>
+                            Definitions
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div
+                class="justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <router-outlet></router-outlet>
+            </div>
+        </main>
+    </div>
+</div>

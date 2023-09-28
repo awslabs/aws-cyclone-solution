@@ -1,0 +1,24 @@
+<div class="row card-group">
+    <div class="col-3 p-3" *ngFor="let queue of queues">
+        <div class="card">
+            <div class="card-header">
+                {{queue.name}}
+            </div>
+            <div class="card-body">
+                <b>Status:</b> {{queue.status}}<br />
+                <b>Compute Environment:</b><a [routerLink]="['/clusters']"> {{queue.computeenvironment}} </a><br />
+                <b>Choose Lowest Spot Region:</b> {{queue.optimise_lowest_spot_cost_region}}<br />
+                <b>Region Weights:</b><br />
+                <div *ngFor="let weight of queue.region_distribution_weights | keyvalue">{{weight.key}}: {{weight.value}}</div>
+            </div>
+            <div class="card-footer text-muted">
+                <button mat-icon-button matTooltip="Queue details..."
+                    [routerLink]="['/queues/', queue.name]"><mat-icon>open_in_browser</mat-icon></button>
+              </div>
+        </div>
+    </div>
+</div>
+<div>
+    <br />
+    <button mat-raised-button [routerLink]="['/']" color="primary">Back</button>
+</div>
