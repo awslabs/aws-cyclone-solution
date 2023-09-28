@@ -1,0 +1,115 @@
+<form *ngIf="definition?.name">
+    <div class="row mb-2">
+        <div class="col-md-2">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" readonly value="{{definition.name}}">
+        </div>
+        <div class="col-md-1">
+            <label for="status" class="form-label">Status</label>
+            <input type="text" class="form-control" id="status" readonly value="{{definition.status}}">
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-3" *ngIf="definition.use_cyclone_image">
+            <label for="cyclone_image" class="form-label">Cyclone Image</label>
+            <input type="text" class="form-control" id="cyclone_image" readonly
+                value="{{definition.cyclone_image_name}}">
+        </div>
+        <div class="col-md-3" *ngIf="!definition.use_cyclone_image">
+            <label for="docker" class="form-label">Docker Image</label>
+            <input type="text" class="form-control" id="docker" readonly value="{{definition.image_uri}}">
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-1">
+            <label for="vcpus" class="col-form-label">vCPUs</label>
+            <input type="text" class="form-control" id="vcpus" readonly value="{{definition.vcpus}}">
+        </div>
+        <div class="col-md-1">
+            <label for="gpu" class="col-form-label">GPUs</label>
+            <input type="text" class="form-control" id="gpus" readonly value="{{definition.gpu_count}}">
+        </div>
+        <div class="col-md-1">
+            <label for="memory" class="col-form-label">Memory</label>
+            <input type="text" class="form-control" id="memory" readonly value="{{definition.memory_limit_mib}}">
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-1">
+            <label for="timeout" class="col-form-label">Timeout</label>
+            <input type="text" class="form-control" id="timeout" readonly value="{{definition.timeout_minutes}}">
+        </div>
+        <div class="col-md-1">
+            <label for="jobstoworker" class="col-form-label">Jobs To Workers</label>
+            <input type="text" class="form-control" id="jobstoworker" readonly
+                value="{{definition.jobs_to_workers_ratio}}">
+        </div>
+        <div class="col-md-1">
+            <label for="privileged" class="col-form-label">Privileged</label>
+            <input type="text" class="form-control" id="privileged" readonly value="{{definition.privileged}}">
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-3">
+            <label for="iam_policies" class="col-form-label">IAM Policies</label>
+            <input type="text" *ngFor="let policy of definition.iam_policies" class="form-control mb-1"
+                id="iam_policies" readonly value="{{policy}}">
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-1">
+            <label for="log_driver" class="col-form-label">Log Driver</label>
+            <input type="text" class="form-control" id="log_driver" readonly value="{{definition.log_driver}}">
+        </div>
+        <div class="col-md-1">
+            <label for="enable_qlog" class="col-form-label">QLOG Enabled</label>
+            <input type="text" class="form-control" id="enable_qlog" readonly value="{{definition.enable_qlog}}">
+        </div>
+        <div class="col-md-1">
+            <label for="enable_qlog" class="col-form-label">Log Options</label>
+            <input type="text" *ngFor="let log_options of definition.log_options | keyvalue" class="form-control mb-1"
+                id="enable_qlog" readonly value="{{log_options.key}}: {{log_options.value}}">
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-1">
+            <label for="host_volumes" class="col-form-label">Host Volumes</label>
+            <input type="text" *ngFor="let host_volumes of definition.host_volumes" class="form-control mb-1"
+                id="host_volumes" readonly value="{{host_volumes}}">
+        </div>
+        <div class="col-md-1">
+            <label for="mount_points" class="col-form-label">Mount Points</label>
+            <input type="text" *ngFor="let mount_points of definition.mount_points" class="form-control mb-1"
+                id="mount_points" readonly value="{{mount_points}}">
+        </div>
+        <div class="col-md-1">
+            <label for="ulimits" class="col-form-label">U Limits</label>
+            <input type="text" *ngFor="let ulimit of definition.ulimits[0] | keyvalue" class="form-control mb-1"
+                id="ulimits" readonly value="{{ulimit.key}}: {{ulimit.value}}">
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-2" *ngIf="definition.user">
+            <label for="user" class="col-form-label">Running User</label>
+            <input type="text" id="user" readonly value="{{definition.user}}">
+        </div>
+        <div class="col-md-2" *ngIf="definition.linux_parameters">
+            <label for="linux_parameters" class="col-form-label">Linux Parameters</label>
+            <input type="text" *ngFor="let linux_parameters of definition.linux_parameters | keyvalue"
+                class="form-control mb-1" id="linux_parameters" readonly
+                value="{{linux_parameters.key}}: {{linux_parameters.value}}">
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-3" *ngIf="definition.environment">
+            <label for="environment" class="col-form-label">Environment VARS</label>
+            <textarea type="textbox" *ngFor="let environment of definition.environment | keyvalue"
+                class="form-control mb-1" id="environment" readonly
+                value="{{environment.key}}: {{environment.value}}"></textarea>
+        </div>
+    </div>
+</form>
+<div>
+    <br />
+    <button mat-raised-button [routerLink]="['/definitions']" color="primary">Back</button>
+</div>

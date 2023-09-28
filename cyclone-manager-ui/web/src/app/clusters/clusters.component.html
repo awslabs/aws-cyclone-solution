@@ -1,0 +1,28 @@
+<div class="row card-group">
+    <div class="col-3 p-3" *ngFor="let cluster of clusters">
+        <div class="card">
+            <div class="card-header">
+                {{cluster.name}}
+            </div>
+            <div class="card-body">
+                <b>Status:</b> {{cluster.status}}<br />
+                <b>AMI:</b> {{cluster.main_region_image_name}}<br />
+                <b>Allocation Strategy:</b> {{cluster.allocation_strategy}}<br />
+                <b>Bid %:</b> {{cluster.bid_percentage}}<br />
+                <b>Max vCPUs:</b> {{cluster.max_vcpus}}<br />
+                <b>Compute Tags:</b><br/>
+                <div *ngFor="let tag of cluster.compute_resources_tags | keyvalue">{{tag.key}}: {{tag.value}}</div>
+                <b>Instance Types:</b>
+                <div *ngFor="let family of cluster.instance_list">{{family}}</div>
+            </div>
+            <div class="card-footer text-muted">
+                <button mat-icon-button matTooltip="Queue details..."
+                    [routerLink]="['/queues']"><mat-icon>open_in_browser</mat-icon></button>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <br />
+    <button mat-raised-button [routerLink]="['/']" color="primary">Back</button>
+</div>

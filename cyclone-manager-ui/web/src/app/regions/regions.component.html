@@ -1,0 +1,18 @@
+<div class="row card-group">
+    <div class="col-3 p-3" *ngFor="let region of regions">
+        <div class="card">
+            <div class="card-header">
+                {{region.name}}
+            </div>
+            <div class="card-body">
+                <b>Status:</b> {{region.status}}<br />
+                <b>VPC ID:</b> {{region.vpc_id}}<br />
+                <b>Main Region:</b> {{region.main_region}}<br />
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <br />
+    <button mat-raised-button [routerLink]="['/']" color="primary">Back</button>
+</div>
