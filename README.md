@@ -5,12 +5,20 @@
 
 - [Table of Contents](#table-of-contents)
 - [What is AWS-Cyclone-Solution?](#what-is-aws-cyclone-solution)
-  - [Capabilities & Performance](#capabilities--performance)
+  - [Capabilities \& Performance](#capabilities--performance)
   - [Benefits](#benefits)
 - [There are Two Deployment Options](#there-are-two-deployment-options)
-  - [Install and use the HYPER CLI to deploy hosts, configure resources & manage jobs](#install-and-use-the-hyper-cli-to-deploy-hosts-configure-resources--manage-jobs)
+  - [Install and use the HYPER CLI to deploy hosts, configure resources \& manage jobs](#install-and-use-the-hyper-cli-to-deploy-hosts-configure-resources--manage-jobs)
   - [Deploy and configure resources with AWS CDK](#deploy-and-configure-resources-with-aws-cdk)
 - [HYPER CLI:](#hyper-cli)
+  - [Job Commands](#job-commands)
+  - [Resource Commands](#resource-commands)
+    - [Host Commands](#host-commands)
+    - [Region Commands](#region-commands)
+    - [Cluster Commands](#cluster-commands)
+    - [Queue Commands](#queue-commands)
+    - [Images Commands](#images-commands)
+    - [Job Definition Commands](#job-definition-commands)
   - [Installing CLI](#installing-cli)
   - [GETTING STARTED USING CLI:](#getting-started-using-cli)
     - [SUGGESTIONS:](#suggestions)
@@ -69,6 +77,53 @@ See section below "Deploy with AWS CDK" to continue with this approach.
   this you use the API & API Credentials to configure resources. Deployment
   is asyncronous and you can check deployment status and view possible error
   logs via the list resources commands.
+
+## Job Commands
+
+qsub [OPTIONS] FILENAME
+qstat [OPTIONS]
+qlog [OPTIONS]
+qdel [OPTIONS]
+
+## Resource Commands
+All resource commands start with 'hyper'. For example "hyper hosts...', 'hyper clusters..."
+### Host Commands
+hyper hosts create-host [OPTIONS]
+hyper hosts list-hosts [OPTIONS]
+hyper hosts select-host [OPTIONS] HOST_NAME
+hyper hosts update-host [OPTIONS]
+hyper hosts import-deployment [OPTIONS]
+
+### Region Commands
+hyper regions init-main-region [OPTIONS]
+hyper regions add-region [OPTIONS]
+hyper regions list-regions [OPTIONS]
+hyper regions update-region [OPTIONS]
+hyper regions delete-region [OPTIONS]
+
+### Cluster Commands
+hyper clusters add-cluster [OPTIONS]
+hyper clusters update-cluster [OPTIONS]
+hyper clusters delete-cluster [OPTIONS]
+hyper clusters list-clusters [OPTIONS]
+
+### Queue Commands
+hyper queues add-queue [OPTIONS]
+hyper queues list-queues [OPTIONS]
+hyper queues update-queue [OPTIONS]
+hyper queues delete-queue [OPTIONS]
+
+### Images Commands
+hyper images add-image [OPTIONS]
+hyper images list-images [OPTIONS]
+hyper images delete-image [OPTIONS]
+hyper images replace-with-local-image [OPTIONS]
+
+### Job Definition Commands
+hyper definitions add-definition [OPTIONS]
+hyper definitions list-definitions [OPTIONS]
+hyper definitions update-definition [OPTIONS]
+hyper definitions delete-definition [OPTIONS]
 ## Installing CLI
 
 Prerequisites:
