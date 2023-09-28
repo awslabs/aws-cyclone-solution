@@ -178,6 +178,13 @@ def main():
     info = get_cpu_info()
     mem_info = psutil.virtual_memory()._asdict()
 
+    try:
+        cpu_count = str(info.get('count', '0'))
+    except Exception:
+        cpu_count = '0'
+        pass
+    
+
     #create dynamodb slot for command pickup
     response = dynamo.put_item(
         TableName=table,
@@ -207,7 +214,7 @@ def main():
             'cpu_arch': {
                 'S': info.get('arch', 'null')},
             'cpu_count': {
-                'S': str(info.get('count'), 'null') if 'count' in info else 'null'},
+                'S': cpu_count},
             'cpu_brand': {
                 'S':info.get('brand_raw', 'null')},
             'cpu_Hz': {

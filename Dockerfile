@@ -29,8 +29,10 @@ COPY 12-vpc-peering-lambda /opt/stack/12-vpc-peering-lambda
 COPY 13-api-config-lambda /opt/stack/13-api-config-lambda
 
 RUN yum -y update && \
-    curl -sL https://rpm.nodesource.com/setup_16.x | bash - && \
-    yum list available nodejs && \
+    #curl -sL https://rpm.nodesource.com/setup_16.x | bash - && \
+    yum install https://rpm.nodesource.com/pub_16.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y && \
+    yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 && \
+   # yum list available nodejs && \
     yum install -y python3-pip && \
     yum install -y nodejs && \
     npm install -g aws-cdk@${AWS_CDK_VERSION} && \

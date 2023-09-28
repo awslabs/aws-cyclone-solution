@@ -1,6 +1,6 @@
 aws-cdk-lib<3.0.0,>=2.51.0
 constructs>=10.0.0,<11.0.0
-aws-cdk.aws-batch-alpha<3.0.0,>=2.51.0a0
+aws-cdk.aws-batch-alpha==2.55.1a0
 
 awscli
 boto3
@@ -12,5 +12,5 @@ jsii
 jsonpickle==2.0.0
 aiohttp
 requests
-py-cpuinfo
+py-cpuinfo==8.0.0.0
 psutil
