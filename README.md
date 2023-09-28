@@ -80,50 +80,50 @@ See section below "Deploy with AWS CDK" to continue with this approach.
 
 ## Job Commands
 
-qsub [OPTIONS] FILENAME
-qstat [OPTIONS]
-qlog [OPTIONS]
-qdel [OPTIONS]
+qsub [OPTIONS] FILENAME\
+qstat [OPTIONS]\
+qlog [OPTIONS]\
+qdel [OPTIONS]\
 
 ## Resource Commands
 All resource commands start with 'hyper'. For example "hyper hosts...', 'hyper clusters..."
 ### Host Commands
-hyper hosts create-host [OPTIONS]
-hyper hosts list-hosts [OPTIONS]
-hyper hosts select-host [OPTIONS] HOST_NAME
-hyper hosts update-host [OPTIONS]
-hyper hosts import-deployment [OPTIONS]
+hyper hosts create-host [OPTIONS]\
+hyper hosts list-hosts [OPTIONS]\
+hyper hosts select-host [OPTIONS] HOST_NAME\
+hyper hosts update-host [OPTIONS]\
+hyper hosts import-deployment [OPTIONS]\
 
 ### Region Commands
-hyper regions init-main-region [OPTIONS]
-hyper regions add-region [OPTIONS]
-hyper regions list-regions [OPTIONS]
-hyper regions update-region [OPTIONS]
-hyper regions delete-region [OPTIONS]
+hyper regions init-main-region [OPTIONS]\
+hyper regions add-region [OPTIONS]\
+hyper regions list-regions [OPTIONS]\
+hyper regions update-region [OPTIONS]\
+hyper regions delete-region [OPTIONS]\
 
 ### Cluster Commands
-hyper clusters add-cluster [OPTIONS]
-hyper clusters update-cluster [OPTIONS]
-hyper clusters delete-cluster [OPTIONS]
-hyper clusters list-clusters [OPTIONS]
+hyper clusters add-cluster [OPTIONS]\
+hyper clusters update-cluster [OPTIONS]\
+hyper clusters delete-cluster [OPTIONS]\
+hyper clusters list-clusters [OPTIONS]\
 
 ### Queue Commands
-hyper queues add-queue [OPTIONS]
-hyper queues list-queues [OPTIONS]
-hyper queues update-queue [OPTIONS]
-hyper queues delete-queue [OPTIONS]
+hyper queues add-queue [OPTIONS]\
+hyper queues list-queues [OPTIONS]\
+hyper queues update-queue [OPTIONS]\
+hyper queues delete-queue [OPTIONS]\
 
 ### Images Commands
-hyper images add-image [OPTIONS]
-hyper images list-images [OPTIONS]
-hyper images delete-image [OPTIONS]
-hyper images replace-with-local-image [OPTIONS]
+hyper images add-image [OPTIONS]\
+hyper images list-images [OPTIONS]\
+hyper images delete-image [OPTIONS]\
+hyper images replace-with-local-image [OPTIONS]\
 
 ### Job Definition Commands
-hyper definitions add-definition [OPTIONS]
-hyper definitions list-definitions [OPTIONS]
-hyper definitions update-definition [OPTIONS]
-hyper definitions delete-definition [OPTIONS]
+hyper definitions add-definition [OPTIONS]\
+hyper definitions list-definitions [OPTIONS]\
+hyper definitions update-definition [OPTIONS]\
+hyper definitions delete-definition [OPTIONS]\
 ## Installing CLI
 
 Prerequisites:
