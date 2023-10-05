@@ -126,7 +126,7 @@ Error: 0
 ```
 SYSTEM | 2023-10-05T10:51:42.941398 | {'Status': 'Waiting', 'jobName': 'max2-job', 'jobQueue': 'max2-queue', 'RetriesAvailable': '2', 'id': '16e718b5-4008-47cb-a049-d4918570b8d4', 'tCreated': '2023-10-05T10:51:42.941398', 'jobDefinition': 'max2-def-333'}
 SYSTEM | 2023-10-05T10:53:15.161370 | {'Status': 'Starting', 'JobQueue': 'max2-queue', 'aws_batch_job_id': '40a5157d-49a1-4647-b26c-928cea9c4f51', 'mem_available_gb': '6.997491712', 'uuid': '15081cb2-120f-4329-b1e3-773de8e74c3a', 'cpu_count': '4', 'cpu_arch': 'X86_64', 'hostname': 'ip-12-0-121-210.eu-central-1.compute.internal', 'CurrentTime': '2023-10-05T10:53:15.161370', 'cpu_Hz': '2.9000 GHz', 'cpu_brand': 'Intel(R) Xeon(R) CPU E5-2666 v3 @ 2.90GHz', 'id': '16e718b5-4008-47cb-a049-d4918570b8d4', 'LeaveRunning': 'True', 'jobDefinition': 'max2-def-333', 'mem_total_gb': '7.820107776'}
-SYSTEM | 2023-10-05T10:53:15.557942 | {'Status': 'Running'}
+SYSTEM | 2023-10-05T10:53:15.557942 | {'Status': 'Running', 'JobQueue': 'max2-queue', 'aws_batch_job_id': '40a5157d-49a1-4647-b26c-928cea9c4f51', 'mem_available_gb': '6.997491712', 'uuid': '15081cb2-120f-4329-b1e3-773de8e74c3a', 'cpu_count': '4', 'cpu_arch': 'X86_64', 'hostname': 'ip-12-0-121-210.eu-central-1.compute.internal', 'CurrentTime': '2023-10-05T10:53:15.557942', 'cpu_Hz': '2.9000 GHz', 'cpu_brand': 'Intel(R) Xeon(R) CPU E5-2666 v3 @ 2.90GHz', 'id': '16e718b5-4008-47cb-a049-d4918570b8d4', 'LeaveRunning': 'True', 'jobDefinition': 'max2-def-333', 'mem_total_gb': '7.820107776'}
 METRICS | 2023-10-05T10:53:15.685131 | {'cpu_count': 4, 'cpu_percent': 42.3, 'mem_total_gb': 7.820107776, 'mem_used_gb': 0.472563712, 'mem_percent': 10.0}
 STDOUT | 2023-10-05T10:53:25.583342 | Counting to 10
 STDOUT | 2023-10-05T10:53:25.583342 | 1 seconds
@@ -139,7 +139,7 @@ STDOUT | 2023-10-05T10:53:25.583342 | 7 seconds
 STDOUT | 2023-10-05T10:53:25.583342 | 8 seconds
 STDOUT | 2023-10-05T10:53:25.583342 | 9 seconds
 STDOUT | 2023-10-05T10:53:25.583342 | 10 seconds
-SYSTEM | 2023-10-05T10:53:25.650733 | {'Status': 'Successful'}
+SYSTEM | 2023-10-05T10:53:25.650733 | {'Status': 'Successful', 'JobQueue': 'max2-queue', 'aws_batch_job_id': '40a5157d-49a1-4647-b26c-928cea9c4f51', 'mem_available_gb': '6.997491712', 'uuid': '15081cb2-120f-4329-b1e3-773de8e74c3a', 'cpu_count': '4', 'cpu_arch': 'X86_64', 'hostname': 'ip-12-0-121-210.eu-central-1.compute.internal', 'CurrentTime': '2023-10-05T10:53:25.650733', 'cpu_Hz': '2.9000 GHz', 'cpu_brand': 'Intel(R) Xeon(R) CPU E5-2666 v3 @ 2.90GHz', 'id': '16e718b5-4008-47cb-a049-d4918570b8d4', 'LeaveRunning': 'True', 'jobDefinition': 'max2-def-333', 'mem_total_gb': '7.820107776'}
 ```
 ## Resource Commands
 All resource commands start with 'hyper'. For example "hyper hosts...', 'hyper clusters..."
