@@ -13,6 +13,8 @@
 - [HYPER CLI:](#hyper-cli)
   - [Job Commands](#job-commands)
     - [Example Job Submit File](#example-job-submit-file)
+    - [Example qstat Output](#example-qstat-output)
+    - [Example qlog Output](#example-qlog-output)
   - [Resource Commands](#resource-commands)
     - [Host Commands](#host-commands)
     - [Region Commands](#region-commands)
@@ -104,6 +106,41 @@ done
 ## END ACTUAL CODE
 ```
 
+### Example qstat Output
+```
+8b75a0a5-0b3c-4197-800c-218fd63eccc4 - max2-job - Waiting - Retries left: 2
+adc5fe08-d7f2-4a4d-b05a-1f494b08ab0e - max2-job - Waiting - Retries left: 2
+16e718b5-4008-47cb-a049-d4918570b8d4 - max2-job - Waiting - Retries left: 2
+4305b891-d207-4658-a64a-50631af985d7 - max2-job - Waiting - Retries left: 2
+4dbf152f-6aca-449d-89d1-e5b6fb3ef5bd - max2-job - Waiting - Retries left: 2
+5a6e4163-547e-49d7-8b98-bccc348e34d2 - max2-job - Waiting - Retries left: 2
+Total: 6
+Waiting: 6
+Running: 0
+Successful: 0
+Failed: 0
+Error: 0
+```
+
+### Example qlog Output
+```
+SYSTEM | 2023-10-05T10:51:42.941398 | {'Status': 'Waiting', 'jobName': 'max2-job', 'jobQueue': 'max2-queue', 'RetriesAvailable': '2', 'id': '16e718b5-4008-47cb-a049-d4918570b8d4', 'tCreated': '2023-10-05T10:51:42.941398', 'jobDefinition': 'max2-def-333'}
+SYSTEM | 2023-10-05T10:53:15.161370 | {'Status': 'Starting', 'JobQueue': 'max2-queue', 'aws_batch_job_id': '40a5157d-49a1-4647-b26c-928cea9c4f51', 'mem_available_gb': '6.997491712', 'uuid': '15081cb2-120f-4329-b1e3-773de8e74c3a', 'cpu_count': '4', 'cpu_arch': 'X86_64', 'hostname': 'ip-12-0-121-210.eu-central-1.compute.internal', 'CurrentTime': '2023-10-05T10:53:15.161370', 'cpu_Hz': '2.9000 GHz', 'cpu_brand': 'Intel(R) Xeon(R) CPU E5-2666 v3 @ 2.90GHz', 'id': '16e718b5-4008-47cb-a049-d4918570b8d4', 'LeaveRunning': 'True', 'jobDefinition': 'max2-def-333', 'mem_total_gb': '7.820107776'}
+SYSTEM | 2023-10-05T10:53:15.557942 | {'Status': 'Running'}
+METRICS | 2023-10-05T10:53:15.685131 | {'cpu_count': 4, 'cpu_percent': 42.3, 'mem_total_gb': 7.820107776, 'mem_used_gb': 0.472563712, 'mem_percent': 10.0}
+STDOUT | 2023-10-05T10:53:25.583342 | Counting to 10
+STDOUT | 2023-10-05T10:53:25.583342 | 1 seconds
+STDOUT | 2023-10-05T10:53:25.583342 | 2 seconds
+STDOUT | 2023-10-05T10:53:25.583342 | 3 seconds
+STDOUT | 2023-10-05T10:53:25.583342 | 4 seconds
+STDOUT | 2023-10-05T10:53:25.583342 | 5 seconds
+STDOUT | 2023-10-05T10:53:25.583342 | 6 seconds
+STDOUT | 2023-10-05T10:53:25.583342 | 7 seconds
+STDOUT | 2023-10-05T10:53:25.583342 | 8 seconds
+STDOUT | 2023-10-05T10:53:25.583342 | 9 seconds
+STDOUT | 2023-10-05T10:53:25.583342 | 10 seconds
+SYSTEM | 2023-10-05T10:53:25.650733 | {'Status': 'Successful'}
+```
 ## Resource Commands
 All resource commands start with 'hyper'. For example "hyper hosts...', 'hyper clusters..."
 ### Host Commands
