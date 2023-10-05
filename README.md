@@ -12,6 +12,7 @@
   - [Deploy and configure resources with AWS CDK](#deploy-and-configure-resources-with-aws-cdk)
 - [HYPER CLI:](#hyper-cli)
   - [Job Commands](#job-commands)
+    - [Example Job Submit File](#example-job-submit-file)
   - [Resource Commands](#resource-commands)
     - [Host Commands](#host-commands)
     - [Region Commands](#region-commands)
@@ -84,6 +85,24 @@ qsub [OPTIONS] FILENAME\
 qstat [OPTIONS]\
 qlog [OPTIONS]\
 qdel [OPTIONS]\
+
+### Example Job Submit File
+```
+#!/bin/bash
+## BEGIN HYPER SETTINGS: Note HYPER lines MUST start with #
+#HYPER -n job-name
+#HYPER -q queue-name
+#HYPER -r 2
+#HYPER -d job-definition-name
+## END HYPER SETTINGS
+## BEGIN ACTUAL CODE
+for i in $(seq 60)
+do
+    echo $i seconds
+    sleep 1
+done
+## END ACTUAL CODE
+```
 
 ## Resource Commands
 All resource commands start with 'hyper'. For example "hyper hosts...', 'hyper clusters..."
