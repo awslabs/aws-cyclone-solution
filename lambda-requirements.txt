@@ -2,4 +2,5 @@ jsonpickle
 aws_xray_sdk
 dynamodb-json
 requests
+urllib3<2.0
 requests_aws4auth
