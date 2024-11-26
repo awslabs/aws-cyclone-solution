@@ -5,7 +5,7 @@ aws-cdk.aws-batch-alpha==2.55.1a0
 awscli
 boto3
 botocore
-cdk-ecr-deployment==2.5.6
+cdk-ecr-deployment
 click
 gql
 jsii
